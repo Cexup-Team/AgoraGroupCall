@@ -1,53 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_main"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".MainActivity">
-    <RelativeLayout
+
+    <FrameLayout
+        android:id="@+id/screen_sharing"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <FrameLayout
-            android:layout_width="320dp"
-            android:layout_height="240dp"
-            android:layout_centerHorizontal="true"
-            android:layout_margin="6dp"
-            android:id="@+id/local_video"
-            android:background="@android:color/darker_gray"
-            />
-        <FrameLayout
-            android:layout_width="320dp"
-            android:layout_height="240dp"
-            android:layout_below="@+id/local_video"
-            android:layout_centerHorizontal="true"
-            android:layout_margin="6dp"
-            android:background="@android:color/darker_gray"
-            android:visibility="gone"
-            android:id="@+id/remote_video"/>
-        <LinearLayout
-            android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:background="@android:color/darker_gray"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/videosRecycleView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/screen_sharing"
+        app:layout_constraintTop_toBottomOf="@+id/screen_sharing" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent">
+        <Button
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/remote_video"
-            android:layout_alignEnd="@id/remote_video"
-            android:gravity="center_horizontal">
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="40dp"
-                android:layout_marginEnd="10dp"
-                android:id="@+id/joinButton"
-                android:text="join"
-                />
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="40dp"
-                android:layout_marginStart="10dp"
-                android:id="@+id/leaveButton"
-                android:text="leave"
-                />
-        </LinearLayout>
-    </RelativeLayout>
-</ScrollView>
+            android:text="Join"
+            android:id="@+id/btn_join"
+            android:layout_margin="5dp"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Share Screen"
+            android:id="@+id/btn_share"
+            android:layout_margin="5dp"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Leave"
+            android:id="@+id/btn_leave"
+            android:layout_margin="5dp"/>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
