@@ -47,26 +47,17 @@
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="match_parent"/>
-        <LinearLayout
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingVertical="6.47dp"
             android:paddingHorizontal="10.79dp"
-            android:background="@drawable/background_button_back">
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/background_button_back"
-                android:paddingVertical="5dp"
-                android:paddingHorizontal="7dp"
-                app:srcCompat="@drawable/ic_people_agora"
-                android:contentDescription="Icon Back" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="15+"
-                android:textColor="@color/white"/>
-        </LinearLayout>
+            android:background="@drawable/background_button_back"
+            android:drawableLeft="@drawable/ic_people_agora"
+            android:drawablePadding="5dp"
+            android:text="XX+"
+            android:textColor="@color/white"/>
         <Space
             android:layout_weight="1"
             android:layout_width="0dp"
@@ -75,7 +66,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="#0D7F96"
-            android:src="@drawable/ic_chat"/>
+            android:src="@drawable/ic_chat"
+            android:contentDescription="chat"/>
         <Space
             android:layout_weight="1"
             android:layout_width="0dp"
@@ -98,6 +90,7 @@
         app:layout_constraintTop_toBottomOf="@+id/screen_sharing" />
 
     <LinearLayout
+        android:id="@+id/botAppBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -136,6 +129,7 @@
             android:layout_height="65.99363dp"
             android:src="@drawable/ic_telephone_hangup"
             android:background="@drawable/background_button_join_call"
+            android:contentDescription="join call"
             android:id="@+id/btn_join"/>
         <ImageButton
             android:layout_width="76.30512dp"
