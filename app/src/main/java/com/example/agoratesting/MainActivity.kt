@@ -2,18 +2,23 @@ package com.example.agoratesting
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PictureInPictureParams
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.DisplayMetrics
+import android.util.Rational
+import android.view.ActionMode
 import android.view.SurfaceView
 import android.view.View
 import android.widget.Toast
@@ -22,6 +27,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
+import androidx.core.view.setPadding
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.agoratesting.databinding.ActivityMainBinding
@@ -341,6 +348,52 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onUserLeaveHint() {
+        // user join
+        if (binding.btnLeave.isVisible){
+            UsePIP()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun UsePIP() {
+        val visibleRect = Rect()
+        val ratio =
+            if(binding.screenSharing.isVisible){
+                Rational(binding.screenSharing.height/2, binding.screenSharing.width/2)
+            }else{
+                Rational(binding.videosRecycleView.height/2, binding.videosRecycleView.width/2)
+            }
+        val pipParams = PictureInPictureParams.Builder()
+            .setAspectRatio(ratio)
+            .setSourceRectHint(visibleRect)
+            .build()
+        enterPictureInPictureMode(pipParams)
+    }
+
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean,
+        newConfig: Configuration?
+    ) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        if (isInPictureInPictureMode){
+            if(binding.screenSharing.isVisible){
+                binding.videosRecycleView.visibility = View.GONE
+            }
+            binding.topAppBar.visibility = View.GONE
+            binding.botAppBar.visibility = View.GONE
+            binding.activityMain.setPadding(0)
+        } else{
+            binding.videosRecycleView.visibility = View.VISIBLE
+            binding.topAppBar.visibility = View.VISIBLE
+            binding.botAppBar.visibility = View.VISIBLE
+            val scale = resources.displayMetrics.density
+            val horizontal = (21.58 * scale + 0.5f).toInt()
+            val vertical = (34.52 * scale + 0.5f).toInt()
+            binding.activityMain.setPadding(horizontal, vertical, horizontal, vertical)
+        }
+    }
     override fun onDestroy() {
         super.onDestroy()
         handler.post(RtcEngine::destroy)
