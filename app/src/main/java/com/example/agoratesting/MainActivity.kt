@@ -43,10 +43,9 @@ class MainActivity : AppCompatActivity() {
     private val ReqID = 22
     private val REQUESTED_PERMISSION =
         arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.CAMERA)
-    private val appId: String = "4300d680db99440ea74c274f82d30c59"
-    private val channelName: String = "CexupTesting"
-    private val token: String =
-        "007eJxTYLjc+O7Vb7NpPprfLj/VE/i/z/SxAvdv0QDZ4xtX+QWZGnxVYDAxNjBIMbMwSEmytDQxMUhNNDdJNjI3SbMwSjE2SDa1bMtISWkIZGRI+lnHxMgAgSA+D4NzakVpQUhqcUlmXjoDAwDNjCOI"
+    private val appId: String = "1326f0f417e84a5ba05198562fffd590"
+    private val channelName: String = "Ibumengandung6"
+    private val token: String = "007eJxTYPg99VnckaSjh6KzNzPue/hg49HGtRqbebPMIuWjzPiD0/8qMBgaG5mlGaSZGJqnWpgkmiYlGpgaWlqYmhmlpaWlmFoa6JnNTGkIZGTg9RBkZGSAQBCfj8EzqTQ3NS89MS+lNC/djIEBAL/4IhM="
     private var rtcEngine: RtcEngine? = null
     private lateinit var handler: Handler
     private var surfaceViews = mutableListOf<SurfaceView>()
@@ -257,6 +256,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun joinChannel() {
         if (checkSelfPermission()) {
+            binding.btnJoin.visibility = View.GONE
+            binding.btnLeave.visibility = View.VISIBLE
             val options: ChannelMediaOptions = ChannelMediaOptions()
             options.channelProfile = Constants.CHANNEL_PROFILE_COMMUNICATION
             options.clientRoleType = Constants.CLIENT_ROLE_BROADCASTER
@@ -331,6 +332,8 @@ class MainActivity : AppCompatActivity() {
             rtcEngine?.leaveChannel()
             rtcEngine?.setupLocalVideo(VideoCanvas(null, VideoCanvas.RENDER_MODE_HIDDEN, uidLocal))
             rtcEngine?.setupRemoteVideo(VideoCanvas(null, VideoCanvas.RENDER_MODE_HIDDEN))
+            binding.btnLeave.visibility = View.GONE
+            binding.btnJoin.visibility = View.VISIBLE
             surfaceViews.clear()
             adapter.notifyDataSetChanged()
         }

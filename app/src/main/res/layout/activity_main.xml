@@ -5,8 +5,82 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingHorizontal="21.58dp"
+    android:paddingVertical="34.52dp"
     android:fitsSystemWindows="true"
     tools:context=".MainActivity">
+
+    <LinearLayout
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingVertical="15.52dp"
+        android:gravity="center"
+        android:background="@drawable/background_top_bottom_bar"
+        android:weightSum="5"
+        app:layout_constraintTop_toTopOf="parent">
+        <Space
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"/>
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/background_button_back"
+            android:paddingVertical="5dp"
+            android:paddingHorizontal="7dp"
+            app:srcCompat="@drawable/ic_arrow_back"
+            android:contentDescription="Icon Back" />
+        <Space
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Meeting Mingguan"
+            android:textSize="20.58sp"
+            android:textFontWeight="500"
+            android:textColor="@color/white"/>
+        <Space
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"/>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6.47dp"
+            android:paddingHorizontal="10.79dp"
+            android:background="@drawable/background_button_back">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/background_button_back"
+                android:paddingVertical="5dp"
+                android:paddingHorizontal="7dp"
+                app:srcCompat="@drawable/ic_people_agora"
+                android:contentDescription="Icon Back" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="15+"
+                android:textColor="@color/white"/>
+        </LinearLayout>
+        <Space
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"/>
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#0D7F96"
+            android:src="@drawable/ic_chat"/>
+        <Space
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"/>
+    </LinearLayout>
 
     <FrameLayout
         android:id="@+id/screen_sharing"
@@ -14,7 +88,7 @@
         android:layout_height="240dp"
         android:background="@android:color/darker_gray"
         android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/topAppBar"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/videosRecycleView"
@@ -27,25 +101,76 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
+        android:weightSum="6"
+        android:paddingVertical="16dp"
+        android:background="@drawable/background_top_bottom_bar"
         app:layout_constraintBottom_toBottomOf="parent">
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Join"
-            android:id="@+id/btn_join"
-            android:layout_margin="5dp"/>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Share Screen"
-            android:id="@+id/btn_share"
-            android:layout_margin="5dp"/>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Leave"
+        <Space
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"/>
+        <ImageButton
+            android:id="@+id/btn_volume"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/ic_volume"
+            android:background="@drawable/background_button_utils_agora"
+            android:contentDescription="qwe" />
+        <Space
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"/>
+        <ImageButton
+            android:id="@+id/btn_camera"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/ic_camera"
+            android:background="@drawable/background_button_utils_agora"
+            android:contentDescription="qwe" />
+        <Space
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"/>
+        <ImageButton
+            android:layout_width="76.30512dp"
+            android:layout_height="65.99363dp"
+            android:src="@drawable/ic_telephone_hangup"
+            android:background="@drawable/background_button_join_call"
+            android:id="@+id/btn_join"/>
+        <ImageButton
+            android:layout_width="76.30512dp"
+            android:layout_height="65.99363dp"
+            android:src="@drawable/ic_telephone_hangup"
+            android:background="@drawable/background_button_end_call"
             android:id="@+id/btn_leave"
-            android:layout_margin="5dp"/>
+            android:visibility="gone"/>
+        <Space
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"/>
+        <ImageButton
+            android:id="@+id/btn_mic"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/ic_mic"
+            android:background="@drawable/background_button_utils_agora"
+            android:contentDescription="qwe" />
+        <Space
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"/>
+        <ImageButton
+            android:id="@+id/btn_share"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/ic_other_agora"
+            android:background="@drawable/background_button_utils_agora"
+            android:contentDescription="qwe" />
+        <Space
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"/>
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
