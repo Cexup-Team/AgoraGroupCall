@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_chat"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingHorizontal="21.58dp"
+    android:paddingVertical="34.52dp"
+    android:fitsSystemWindows="true"
+    tools:context=".ChatActivity">
+
+    <LinearLayout
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingVertical="15.52dp"
+        android:gravity="center"
+        android:background="@drawable/background_top_bottom_bar"
+        android:weightSum="5"
+        app:layout_constraintTop_toTopOf="parent">
+        <Space
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"/>
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/background_button_back"
+            android:paddingVertical="5dp"
+            android:paddingHorizontal="7dp"
+            app:srcCompat="@drawable/ic_arrow_back"
+            android:contentDescription="Icon Back" />
+        <Space
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Meeting Mingguan"
+            android:textSize="20.58sp"
+            android:textFontWeight="500"
+            android:textColor="@color/white"/>
+        <Space
+            android:layout_weight="4"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"/>
+
+    </LinearLayout>
+
+    <androidx.fragment.app.FragmentContainerView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="150dp"
+        android:minHeight="150dp"
+        android:id="@+id/fragment_container_floatVid"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:name="com.example.agoratesting.FloatingVidFragment" />
+
+    <LinearLayout
+        android:id="@+id/botAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:weightSum="6"
+        android:paddingVertical="16dp"
+        android:background="@drawable/background_top_bottom_bar"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <Space
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"/>
+
+        <EditText
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:textAlignment="viewStart"
+            android:hint="Write message here"
+            android:textSize="15sp"
+            android:textFontWeight="500"
+            android:backgroundTint="@color/white"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white"/>
+        <Space
+            android:layout_weight="2"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"/>
+
+        <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/baseline_send_24"
+            android:background="@drawable/background_button_send"/>
+        <Space
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"/>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
