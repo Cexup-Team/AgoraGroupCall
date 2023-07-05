@@ -346,10 +346,11 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnChat.setOnClickListener {
             val moveIntent = Intent(this, ChatActivity::class.java)
+            moveIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(moveIntent)
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                usePIP()
-//            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && binding.btnLeave.isVisible) {
+                usePIP()
+            }
         }
     }
 
