@@ -22,8 +22,6 @@ class TabletMainActivity : AppCompatActivity() {
 
         //observe trus panggil func
         checkMainFocus(isMainFocus)
-        val layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        binding.tabletVideoRv.layoutManager = layoutManager
 
         binding.tabletChatBtn.setOnClickListener {
             if (binding.tabletChatScreen.isVisible){
