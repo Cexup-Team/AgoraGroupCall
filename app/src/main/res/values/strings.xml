@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">AgoraTesting</string>
+
+    <string name="title_top_tablet"><b>%s | %s</b></string>
 </resources>

@@ -2,15 +2,17 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_width="175dp"
+    android:layout_height="150dp"
+    android:padding="5dp"
     android:id="@+id/container">
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="187dp"
+        android:layout_height="match_parent"
         android:background="@android:color/darker_gray"
-        app:layout_constraintTop_toTopOf="parent"
-        android:id="@+id/videoFrame"/>
+        android:foregroundGravity="center"
+        android:id="@+id/videoFrame"
+        tools:foreground="@tools:sample/avatars"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
