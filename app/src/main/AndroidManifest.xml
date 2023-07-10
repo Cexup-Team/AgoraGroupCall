@@ -30,13 +30,7 @@
         <activity
             android:name=".TabletMainActivity"
             android:screenOrientation="landscape"
-            android:exported="true">
-
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:exported="false">
         </activity>
         <!-- <activity -->
         <!-- android:name=".TestActivity" -->
@@ -48,8 +42,14 @@
             android:name=".MainActivity"
             android:taskAffinity=".ChatActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:exported="false"
+            android:exported="true"
             android:supportsPictureInPicture="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
     </application>
 

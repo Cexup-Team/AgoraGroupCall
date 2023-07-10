@@ -345,7 +345,9 @@ class MainActivity : AppCompatActivity() {
             adapter.notifyDataSetChanged()
         }
 
-
+        binding.member.setOnClickListener {
+            startActivity(Intent(this, TabletMainActivity::class.java))
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
