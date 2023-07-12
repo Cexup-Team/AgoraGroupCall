@@ -30,9 +30,12 @@
         <activity
             android:name=".ChatActivity"
             android:exported="false" />
-        <!-- <activity -->
-        <!-- android:name=".TestActivity" -->
-        <!-- android:exported="false" /> -->
+       </activity>
+      <activity>
+            android:name=".TabletMainActivity"
+            android:screenOrientation="landscape"
+            android:exported="false">
+        </activity>
         <activity
             android:name=".UIkitAgoraActivity"
             android:exported="true" />

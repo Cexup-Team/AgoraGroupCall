@@ -352,6 +352,9 @@ class MainActivity : AppCompatActivity() {
                 usePIP()
             }
         }
+        binding.member.setOnClickListener {
+            startActivity(Intent(this, TabletMainActivity::class.java))
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
