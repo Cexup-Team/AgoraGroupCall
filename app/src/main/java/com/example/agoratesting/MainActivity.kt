@@ -29,7 +29,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.view.setPadding
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.agoratesting.databinding.ActivityMainBinding
 import io.agora.rtc2.ChannelMediaOptions
@@ -50,9 +49,9 @@ class MainActivity : AppCompatActivity() {
     private val ReqID = 22
     private val REQUESTED_PERMISSION =
         arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.CAMERA)
-    private val appId: String = "1326f0f417e84a5ba05198562fffd590"
-    private val channelName: String = "Ibumengandung6"
-    private val token: String = "007eJxTYPg99VnckaSjh6KzNzPue/hg49HGtRqbebPMIuWjzPiD0/8qMBgaG5mlGaSZGJqnWpgkmiYlGpgaWlqYmhmlpaWlmFoa6JnNTGkIZGTg9RBkZGSAQBCfj8EzqTQ3NS89MS+lNC/djIEBAL/4IhM="
+    private val appId: String = "4300d680db99440ea74c274f82d30c59"
+    private val channelName: String = "CexupTest"
+    private val token: String = "007eJxTYJif/WmSWjLnu+45i7hUOI4uL07p8UppcG0LVxPdP4HjR4wCg4mxgUGKmYVBSpKlpYmJQWqiuUmykblJmoVRirFBsqllWNOilIZARgadqH5GRgYIBPE5GZxTK0oLQlKLSxgYAEWBHs8="
     private var rtcEngine: RtcEngine? = null
     private lateinit var handler: Handler
     private var surfaceViews = mutableListOf<SurfaceView>()
@@ -288,7 +287,7 @@ class MainActivity : AppCompatActivity() {
 
         adapter = TestAdapter()
 
-        val layoutManager = GridLayoutManager(this, 2, LinearLayoutManager.VERTICAL, false)
+        val layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding.videosRecycleView.layoutManager = layoutManager
 
         binding.videosRecycleView.adapter = adapter
@@ -345,6 +344,14 @@ class MainActivity : AppCompatActivity() {
             adapter.notifyDataSetChanged()
         }
 
+        binding.btnChat.setOnClickListener {
+            val moveIntent = Intent(this, ChatActivity::class.java)
+            moveIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(moveIntent)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && binding.btnLeave.isVisible) {
+                usePIP()
+            }
+        }
         binding.member.setOnClickListener {
             startActivity(Intent(this, TabletMainActivity::class.java))
         }
@@ -354,18 +361,19 @@ class MainActivity : AppCompatActivity() {
     override fun onUserLeaveHint() {
         // user join
         if (binding.btnLeave.isVisible){
-            UsePIP()
+            usePIP()
         }
     }
 
+
     @RequiresApi(Build.VERSION_CODES.O)
-    fun UsePIP() {
+    fun usePIP() {
         val visibleRect = Rect()
         val ratio =
             if(binding.screenSharing.isVisible){
                 Rational(binding.screenSharing.height/2, binding.screenSharing.width/2)
             }else{
-                Rational(binding.videosRecycleView.height/2, binding.videosRecycleView.width/2)
+                Rational(binding.videosRecycleView.height, binding.videosRecycleView.width/2)
             }
         val pipParams = PictureInPictureParams.Builder()
             .setAspectRatio(ratio)
@@ -379,9 +387,15 @@ class MainActivity : AppCompatActivity() {
         newConfig: Configuration?
     ) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        val scale = resources.displayMetrics.density
+        val horizontal = (21.58 * scale + 0.5f).toInt()
+        val vertical = (34.52 * scale + 0.5f).toInt()
+
         if (isInPictureInPictureMode){
             if(binding.screenSharing.isVisible){
                 binding.videosRecycleView.visibility = View.GONE
+            }else{
+                binding.videosRecycleView.height
             }
             binding.topAppBar.visibility = View.GONE
             binding.botAppBar.visibility = View.GONE
@@ -390,9 +404,6 @@ class MainActivity : AppCompatActivity() {
             binding.videosRecycleView.visibility = View.VISIBLE
             binding.topAppBar.visibility = View.VISIBLE
             binding.botAppBar.visibility = View.VISIBLE
-            val scale = resources.displayMetrics.density
-            val horizontal = (21.58 * scale + 0.5f).toInt()
-            val vertical = (34.52 * scale + 0.5f).toInt()
             binding.activityMain.setPadding(horizontal, vertical, horizontal, vertical)
         }
     }
