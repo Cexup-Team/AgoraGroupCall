@@ -43,6 +43,8 @@ dependencies {
     // case 1: full libs
     implementation "io.agora.rtc:full-sdk:${agora_sdk_version}"
     implementation "io.agora.rtc:full-screen-sharing:${agora_sdk_version}"
+    implementation "io.agora.rtc:chat-sdk:1.1.0"
+
     // case 2: partial libs
     // implementation "io.agora.rtc:full-rtc-basic:${agora_sdk_version}"
     // implementation "io.agora.rtc:ains:${agora_sdk_version}"
