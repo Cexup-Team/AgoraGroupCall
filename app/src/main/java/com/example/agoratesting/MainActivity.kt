@@ -21,15 +21,19 @@ import android.util.Rational
 import android.view.ActionMode
 import android.view.SurfaceView
 import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.view.setPadding
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.agoratesting.databinding.ActivityMainBinding
 import io.agora.rtc2.ChannelMediaOptions
 import io.agora.rtc2.Constants
@@ -394,8 +398,6 @@ class MainActivity : AppCompatActivity() {
         if (isInPictureInPictureMode){
             if(binding.screenSharing.isVisible){
                 binding.videosRecycleView.visibility = View.GONE
-            }else{
-                binding.videosRecycleView.height
             }
             binding.topAppBar.visibility = View.GONE
             binding.botAppBar.visibility = View.GONE
