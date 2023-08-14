@@ -8,7 +8,7 @@
     android:paddingHorizontal="21.58dp"
     android:paddingVertical="34.52dp"
     android:fitsSystemWindows="true"
-    tools:context=".ChatActivity">
+    tools:context=".uiActivity.chat.ChatActivity">
 
     <LinearLayout
         android:id="@+id/topAppBarChat"
@@ -19,6 +19,7 @@
         android:background="@drawable/background_top_bottom_bar"
         android:weightSum="5"
         app:layout_constraintTop_toTopOf="parent">
+
         <Space
             android:layout_weight="0.5"
             android:layout_width="0dp"
@@ -34,13 +35,13 @@
             app:srcCompat="@drawable/ic_arrow_back"
             android:contentDescription="Icon Back" />
         <Space
-            android:layout_weight="1"
+            android:layout_weight="0.5"
             android:layout_width="0dp"
             android:layout_height="match_parent"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Meeting Mingguan"
+            android:text="Message"
             android:textSize="20.58sp"
             android:textFontWeight="500"
             android:textColor="@color/white"/>

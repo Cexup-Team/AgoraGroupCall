@@ -1,4 +1,4 @@
-package com.example.agoratesting
+package com.example.agoratesting.utils
 
 object TextUtils {
     /**

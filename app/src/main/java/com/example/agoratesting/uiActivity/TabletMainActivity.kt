@@ -1,4 +1,4 @@
-package com.example.agoratesting
+package com.example.agoratesting.uiActivity
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
