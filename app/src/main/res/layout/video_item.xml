@@ -1,18 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="175dp"
-    android:layout_height="150dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:foregroundGravity="center"
     android:padding="5dp"
-    android:id="@+id/container">
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@android:color/darker_gray"
-        android:foregroundGravity="center"
-        android:id="@+id/videoFrame"
-        tools:foreground="@tools:sample/avatars"/>
-
-</androidx.cardview.widget.CardView>
+    tools:foreground="@tools:sample/avatars"
+    android:id="@+id/videoFrame">
+</FrameLayout>
