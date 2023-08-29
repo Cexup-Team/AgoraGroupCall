@@ -1,6 +1,8 @@
 package com.example.agoratesting.uiActivity
 
 import android.annotation.SuppressLint
+import android.app.ActionBar.LayoutParams
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.SurfaceView
 import android.view.ViewGroup
@@ -10,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.agoratesting.databinding.VideoItemBinding
 
 class VideoAdapter : ListAdapter<SurfaceView, VideoAdapter.ViewHolder>(VideoDiffCallBack) {
+
     class ViewHolder(val itemViewBinding: VideoItemBinding) : RecyclerView.ViewHolder(itemViewBinding.root){
         fun onBind(surface : SurfaceView){
             itemViewBinding.videoFrame.addView(surface)
@@ -33,10 +36,13 @@ class VideoAdapter : ListAdapter<SurfaceView, VideoAdapter.ViewHolder>(VideoDiff
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = VideoItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-
         val lp = binding.videoFrame.layoutParams
-        lp.width = parent.measuredWidth/2
-        lp.height = lp.width
+        lp.height = LayoutParams.MATCH_PARENT
+        if (itemCount > 2){
+            lp.width = parent.measuredWidth / 2
+        } else{
+            lp.width = LayoutParams.MATCH_PARENT
+        }
         return ViewHolder(binding)
     }
 
@@ -49,6 +55,16 @@ class VideoAdapter : ListAdapter<SurfaceView, VideoAdapter.ViewHolder>(VideoDiff
         super.onViewDetachedFromWindow(holder)
         holder.unBind()
     }
+
+    override fun onViewAttachedToWindow(holder: ViewHolder) {
+        super.onViewAttachedToWindow(holder)
+        try {
+            holder.onBind(getItem(holder.layoutPosition))
+        } catch (e: Exception){
+            //to-do
+        }
+    }
+
 }
 
 object VideoDiffCallBack : DiffUtil.ItemCallback<SurfaceView>() {

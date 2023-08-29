@@ -68,35 +68,4 @@ class AuthViewModel :ViewModel() {
         })
     }
 
-    fun joinChat_1p(username: String, token: String, targetID: String){
-
-        _isLoading.value = true
-        if (ChatClient.getInstance().isLoggedIn){
-            Log.w("CallBack Login", "UserLoggedIn")
-            chatManager.targetID = targetID
-            chatManager.isChatRoom = false
-            _isLoading.postValue(false)
-            _joinedChat.postValue(true)
-        }
-        else{
-            ChatClient.getInstance().loginWithAgoraToken(username, token, object : CallBack{
-                override fun onSuccess() {
-                    Log.w("CallBack Login", "Login Success")
-                    chatManager.targetID = targetID
-                    chatManager.isChatRoom = false
-                    _isLoading.postValue(false)
-                    _joinedChat.postValue(true)
-                    errorMSG = ""
-                }
-
-                override fun onError(code: Int, error: String?) {
-                    Log.w("CallBack Login", "Login Error")
-                    errorMSG = error.toString()
-                    _joinedChat.postValue(false)
-                    _isLoading.postValue(false)
-                }
-
-            })
-        }
-    }
 }

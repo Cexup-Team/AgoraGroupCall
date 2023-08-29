@@ -5,8 +5,10 @@ import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import com.example.agoratesting.R
 import com.example.agoratesting.databinding.ActivityChatBinding
+import com.example.agoratesting.utils.VidSDK
 import com.example.agoratesting.utils.chatManager
 import com.example.agoratesting.utils.userManager
 import io.agora.CallBack
@@ -22,6 +24,8 @@ class ChatActivity : AppCompatActivity(){
 
     private var targetID :String = chatManager.targetID
     private var isChatRoom : Boolean = chatManager.isChatRoom
+
+    private var rtcEngine = VidSDK.rtcEngine
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatBinding.inflate(layoutInflater)
@@ -29,6 +33,43 @@ class ChatActivity : AppCompatActivity(){
 
         initListener()
 
+        binding.btnVidcamChat.setOnClickListener {
+            if (it.tag == "ic_videocam"){
+                binding.btnVidcamChat.setImageResource(R.drawable.ic_videocam_off)
+                binding.btnVidcamChat.tag = "ic_videocam_off"
+
+                rtcEngine?.enableLocalVideo(false)
+            } else if (it.tag == "ic_mic_off"){
+
+                binding.btnVidcamChat.setImageResource(R.drawable.ic_videocam)
+                binding.btnVidcamChat.tag = "ic_videocam"
+
+                rtcEngine?.enableLocalVideo(true)
+            }
+        }
+
+        binding.btnMicChat.setOnClickListener {
+            if (it.tag == "ic_mic"){
+                binding.btnMicChat.setImageResource(R.drawable.ic_mic_off)
+                binding.btnMicChat.tag = "ic_mic_off"
+
+                rtcEngine?.enableLocalAudio(false)
+            } else if (it.tag == "ic_mic_off"){
+
+                binding.btnMicChat.setImageResource(R.drawable.ic_mic)
+                binding.btnMicChat.tag = "ic_mic"
+
+                rtcEngine?.enableLocalAudio(true)
+            }
+        }
+
+        binding.btnOtherMenu.setOnClickListener {
+            if (binding.optionMenu.isVisible){
+                binding.optionMenu.isVisible = false
+            } else{
+                binding.optionMenu.isVisible = true
+            }
+        }
         binding.btnSendChat.setOnClickListener {
             val etMessage = binding.etChat.text
             if (etMessage.isNotBlank()){
