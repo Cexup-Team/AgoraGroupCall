@@ -37,7 +37,7 @@ class AuthViewModel :ViewModel() {
                 }
 
                 override fun onError(code: Int, error: String?) {
-                    Log.w("CallBack Login", "Login Error")
+                    Log.w("CallBack Login", "${code} : ${error.toString()}")
                     errorMSG = error.toString()
                     _isLoading.postValue(false)
                 }
@@ -60,9 +60,9 @@ class AuthViewModel :ViewModel() {
             }
 
             override fun onError(error: Int, errorMsg: String?) {
-                errorMSG = error.toString()
+                errorMSG = errorMsg.toString()
                 _isLoading.postValue(false)
-                Log.w("CallBack ChatRoom", "Join ChatRoom Error")
+                Log.w("CallBack ChatRoom", "${error} : ${errorMsg.toString()}")
             }
 
         })

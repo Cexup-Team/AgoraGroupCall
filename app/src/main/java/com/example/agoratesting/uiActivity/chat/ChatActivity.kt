@@ -70,6 +70,7 @@ class ChatActivity : AppCompatActivity(){
                 binding.optionMenu.isVisible = true
             }
         }
+
         binding.btnSendChat.setOnClickListener {
             val etMessage = binding.etChat.text
             if (etMessage.isNotBlank()){
@@ -83,13 +84,14 @@ class ChatActivity : AppCompatActivity(){
                     override fun onSuccess() {
                         Log.w("Send CallBack", "Message Sent Successfully")
                         Log.w("Sent Message", "Message Sent Success")
+
                         addChatView(message)
                         etMessage.clear()
                         binding.scrollChat.fullScroll(View.FOCUS_DOWN)
                     }
 
                     override fun onError(code: Int, error: String?) {
-                        Log.e("Send CallBack", error.toString())
+                        Log.e("Send CallBack", "${code} : ${error.toString()}")
                     }
 
                 })
@@ -110,7 +112,7 @@ class ChatActivity : AppCompatActivity(){
                 for (msg in messages) {
                     if (msg.from == targetID){
                         addChatView(msg)
-                    } else if (msg.chatType == ChatType.ChatRoom){
+                    } else if (msg.chatType == ChatType.ChatRoom && msg.to == targetID){
                         addChatView(msg)
                     }
                 }

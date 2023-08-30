@@ -94,6 +94,7 @@
         android:layout_marginVertical="5dp"
         android:showDividers="middle"
         android:divider="@drawable/line_divider"
+        android:visibility="gone"
         android:padding="10dp"
         android:elevation="10dp"
         android:background="@drawable/background_rounded_corner"

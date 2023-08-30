@@ -64,13 +64,35 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"/>
 
-        <ImageButton
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/btn_chat"
-            android:background="#0D7F96"
-            android:src="@drawable/ic_chat"
-            android:contentDescription="chat"/>
+            android:layout_height="wrap_content">
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btn_chat"
+                android:background="#0D7F96"
+                android:src="@drawable/ic_chat"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:contentDescription="chat"/>
+
+            <TextView
+                android:id="@+id/tv_unread_count"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:text="0"
+                android:visibility="gone"
+                android:textAlignment="center"
+                android:textSize="10sp"
+                android:textColor="@color/white"
+                android:background="@drawable/red_cirlce_notif"
+                app:layout_constraintTop_toTopOf="@+id/btn_chat"
+                app:layout_constraintEnd_toEndOf="@+id/btn_chat" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
         <Space
             android:layout_weight="1"
             android:layout_width="0dp"

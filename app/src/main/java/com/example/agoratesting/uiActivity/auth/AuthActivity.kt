@@ -27,8 +27,8 @@ class AuthActivity : AppCompatActivity() {
         arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.CAMERA)
     private lateinit var username :String
     private lateinit var token :String
-    private val roomID = chatManager.ROOM_ID
-
+    private lateinit var tokenRTC :String
+    private lateinit var roomID : String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAuthBinding.inflate(layoutInflater)
@@ -40,8 +40,10 @@ class AuthActivity : AppCompatActivity() {
             if (isLoading){
                 binding.authPB.isVisible = true
                 binding.joinBtn.isVisible = false
+                binding.tvError.isVisible = false
 
                 binding.TILUsername.isVisible = false
+                binding.TILRoomId.isVisible = false
                 binding.TILUsertoken.isVisible = false
                 binding.TILRtcToken.isVisible = false
             }
@@ -50,9 +52,11 @@ class AuthActivity : AppCompatActivity() {
                 binding.joinBtn.isVisible = true
 
                 binding.TILUsername.isVisible = true
+                binding.TILRoomId.isVisible = true
                 binding.TILUsertoken.isVisible = true
                 binding.TILRtcToken.isVisible = true
                 if (viewModel.errorMSG.isNotEmpty()){
+                    binding.tvError.isVisible = true
                     binding.tvError.text = viewModel.errorMSG
                 }
             }
@@ -75,11 +79,16 @@ class AuthActivity : AppCompatActivity() {
             if(checkSelfPermission()){
                 username = binding.TIEUsername.text.toString()
                 token = binding.TIEUsertoken.text.toString()
+                tokenRTC = binding.TIERtcToken.text.toString()
+                roomID = binding.TIERoomId.text.toString()
 
-                userManager.username = username
-                userManager.userToken = token
-                videoManager.rtcToken = binding.TIERtcToken.text.toString()
-                viewModel.joinMeeting(username, token, roomID)
+                if (username.isNotBlank() && token.isNotBlank() && tokenRTC.isNotBlank() && roomID.isNotBlank()){
+                    userManager.username = username
+                    userManager.userToken = token
+                    videoManager.rtcToken = tokenRTC
+                    chatManager.ROOM_ID = roomID
+                }
+                viewModel.joinMeeting(userManager.username, userManager.userToken, chatManager.ROOM_ID)
                 chatManager.targetID = roomID
             } else{
                 sendPermReq()

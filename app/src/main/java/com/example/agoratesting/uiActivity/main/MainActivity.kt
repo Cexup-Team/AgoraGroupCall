@@ -39,6 +39,7 @@ import com.example.agoratesting.uiActivity.VideoAdapter
 import com.example.agoratesting.databinding.ActivityMainBinding
 import com.example.agoratesting.uiActivity.chat.ChatActivity
 import com.example.agoratesting.utils.VidSDK
+import com.example.agoratesting.utils.chatManager
 import com.example.agoratesting.utils.videoManager
 import io.agora.base.internal.BuildConfig
 import io.agora.chat.ChatClient
@@ -362,21 +363,23 @@ class MainActivity : AppCompatActivity() {
             var unreadMSG = 0
             if( messages != null){
                 for (msg in messages){
-                    if (msg.chatType == ChatMessage.ChatType.ChatRoom){
+                    if (msg.chatType == ChatMessage.ChatType.ChatRoom && msg.to == chatManager.ROOM_ID){
                         unreadMSG += 1
                     }
                 }
             }
             viewModel.UnreadMark(unreadMSG)
         }
+
 //        change icon based on unread
-//        viewModel.unreadMSG.observe(this){
-//            if (it > 0){
-//                binding.btnChat.setImageResource(R.drawable.ic_chat_unread)
-//            } else{
-//                binding.btnChat.setImageResource(R.drawable.ic_chat)
-//            }
-//        }
+        viewModel.unreadMSG.observe(this){
+            if (it > 0){
+                binding.tvUnreadCount.isVisible = true
+                binding.tvUnreadCount.text = it.toString()
+            } else{
+                binding.tvUnreadCount.isVisible = false
+            }
+        }
 
         binding.btnVolume.setOnClickListener {
             if (it.tag == "ic_volume"){

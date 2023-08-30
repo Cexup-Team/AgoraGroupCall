@@ -5,7 +5,7 @@ import com.example.agoratesting.data.Chat
 
 object chatManager {
     var APP_KEY :String = "611000680#1167414"
-    var ROOM_ID :String = "219929636831233"
+    var ROOM_ID :String = ""
 
     var targetID :String = ""
     var isChatRoom : Boolean = false
