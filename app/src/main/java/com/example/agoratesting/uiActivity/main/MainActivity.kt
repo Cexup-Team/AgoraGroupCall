@@ -399,33 +399,34 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnVidcam.setOnClickListener {
+
             if (it.tag == "ic_videocam"){
-                rtcEngine?.enableLocalVideo(false)
+
+                rtcEngine?.muteLocalVideoStream(true)
 
                 binding.btnVidcam.setImageResource(R.drawable.ic_videocam_off)
                 binding.btnVidcam.tag = "ic_videocam_off"
             } else if (it.tag == "ic_videocam_off"){
 
-                rtcEngine?.enableLocalVideo(true)
-
-//                rtcEngine?.enableVideoImageSource(true, ImageTrackOptions("url/path", 30))
+                rtcEngine?.muteLocalVideoStream(false)
 
                 binding.btnVidcam.setImageResource(R.drawable.ic_videocam)
                 binding.btnVidcam.tag = "ic_videocam"
-
             }
         }
 
         binding.btnMic.setOnClickListener {
             if (it.tag == "ic_mic"){
 
-                rtcEngine?.enableLocalAudio(false)
+                rtcEngine?.muteLocalAudioStream(true)
+
                 binding.btnMic.setImageResource(R.drawable.ic_mic_off)
                 binding.btnMic.tag = "ic_mic_off"
 
             } else if (it.tag == "ic_mic_off"){
 
-                rtcEngine?.enableLocalAudio(true)
+                rtcEngine?.muteLocalAudioStream(false)
+
                 binding.btnMic.setImageResource(R.drawable.ic_mic)
                 binding.btnMic.tag = "ic_mic"
             }

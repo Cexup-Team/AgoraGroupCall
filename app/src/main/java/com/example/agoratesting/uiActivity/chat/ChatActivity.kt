@@ -38,13 +38,13 @@ class ChatActivity : AppCompatActivity(){
                 binding.btnVidcamChat.setImageResource(R.drawable.ic_videocam_off)
                 binding.btnVidcamChat.tag = "ic_videocam_off"
 
-                rtcEngine?.enableLocalVideo(false)
-            } else if (it.tag == "ic_mic_off"){
+                rtcEngine?.muteLocalVideoStream(true)
+            } else if (it.tag == "ic_videocam_off"){
 
                 binding.btnVidcamChat.setImageResource(R.drawable.ic_videocam)
                 binding.btnVidcamChat.tag = "ic_videocam"
 
-                rtcEngine?.enableLocalVideo(true)
+                rtcEngine?.muteLocalVideoStream(false)
             }
         }
 
@@ -53,13 +53,13 @@ class ChatActivity : AppCompatActivity(){
                 binding.btnMicChat.setImageResource(R.drawable.ic_mic_off)
                 binding.btnMicChat.tag = "ic_mic_off"
 
-                rtcEngine?.enableLocalAudio(false)
+                rtcEngine?.muteLocalAudioStream(true)
             } else if (it.tag == "ic_mic_off"){
 
                 binding.btnMicChat.setImageResource(R.drawable.ic_mic)
                 binding.btnMicChat.tag = "ic_mic"
 
-                rtcEngine?.enableLocalAudio(true)
+                rtcEngine?.muteLocalAudioStream(false)
             }
         }
 
