@@ -37,7 +37,7 @@ class AuthViewModel :ViewModel() {
                 }
 
                 override fun onError(code: Int, error: String?) {
-                    Log.w("CallBack Login", "Login Error")
+                    Log.w("CallBack Login", "${code} : ${error.toString()}")
                     errorMSG = error.toString()
                     _isLoading.postValue(false)
                 }
@@ -60,43 +60,12 @@ class AuthViewModel :ViewModel() {
             }
 
             override fun onError(error: Int, errorMsg: String?) {
-                errorMSG = error.toString()
+                errorMSG = errorMsg.toString()
                 _isLoading.postValue(false)
-                Log.w("CallBack ChatRoom", "Join ChatRoom Error")
+                Log.w("CallBack ChatRoom", "${error} : ${errorMsg.toString()}")
             }
 
         })
     }
 
-    fun joinChat_1p(username: String, token: String, targetID: String){
-
-        _isLoading.value = true
-        if (ChatClient.getInstance().isLoggedIn){
-            Log.w("CallBack Login", "UserLoggedIn")
-            chatManager.targetID = targetID
-            chatManager.isChatRoom = false
-            _isLoading.postValue(false)
-            _joinedChat.postValue(true)
-        }
-        else{
-            ChatClient.getInstance().loginWithAgoraToken(username, token, object : CallBack{
-                override fun onSuccess() {
-                    Log.w("CallBack Login", "Login Success")
-                    chatManager.targetID = targetID
-                    chatManager.isChatRoom = false
-                    _isLoading.postValue(false)
-                    _joinedChat.postValue(true)
-                    errorMSG = ""
-                }
-
-                override fun onError(code: Int, error: String?) {
-                    Log.w("CallBack Login", "Login Error")
-                    errorMSG = error.toString()
-                    _joinedChat.postValue(false)
-                    _isLoading.postValue(false)
-                }
-
-            })
-        }
-    }
 }

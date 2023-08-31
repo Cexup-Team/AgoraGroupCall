@@ -11,6 +11,7 @@ import android.content.res.Configuration
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Rect
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -29,22 +30,26 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.view.setPadding
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView.LayoutParams
 import com.example.agoratesting.MainApplication
 import com.example.agoratesting.R
 import com.example.agoratesting.uiActivity.VideoAdapter
 import com.example.agoratesting.databinding.ActivityMainBinding
 import com.example.agoratesting.uiActivity.chat.ChatActivity
+import com.example.agoratesting.utils.VidSDK
+import com.example.agoratesting.utils.chatManager
 import com.example.agoratesting.utils.videoManager
+import io.agora.base.internal.BuildConfig
 import io.agora.chat.ChatClient
+import io.agora.chat.ChatMessage
 import io.agora.rtc2.ChannelMediaOptions
 import io.agora.rtc2.Constants
 import io.agora.rtc2.IRtcEngineEventHandler
 import io.agora.rtc2.RtcEngine
-import io.agora.rtc2.RtcEngineConfig
 import io.agora.rtc2.ScreenCaptureParameters
+import io.agora.rtc2.video.ImageTrackOptions
 import io.agora.rtc2.video.VideoCanvas
 import io.agora.rtc2.video.VideoEncoderConfiguration
 import io.agora.rtc2.video.VideoEncoderConfiguration.FRAME_RATE
@@ -187,6 +192,8 @@ class MainActivity : AppCompatActivity() {
         )
         adapter.submitList(surfaceViews)
         adapter.notifyItemChanged(surfaceViews.indexOf(adapter.getItemByTag(uidLocal)))
+
+        binding.member.text = "${surfaceViews.size}"
     }
 
 
@@ -207,6 +214,12 @@ class MainActivity : AppCompatActivity() {
                 )
                 adapter.submitList(surfaceViews)
                 adapter.notifyItemChanged(adapter.currentList.size - 1)
+
+                binding.member.text = "${surfaceViews.size}"
+                binding.videosRecycleView.adapter = adapter
+                if(adapter.itemCount >= 2){
+                    binding.videosRecycleView.layoutManager = gridLayoutManager
+                }
             }
         }
 
@@ -221,6 +234,26 @@ class MainActivity : AppCompatActivity() {
                 val position = surfaceViews.indexOf(adapter.getItemByTag(uid))
                 surfaceViews.remove(adapter.getItemByTag(uid))
                 adapter.notifyItemRemoved(position)
+
+                binding.member.text = "${surfaceViews.size}"
+                binding.videosRecycleView.adapter = adapter
+                if(adapter.itemCount == 2){
+                    for (i in 1 until adapter.itemCount){
+                        val holder = binding.videosRecycleView.findViewHolderForAdapterPosition(i)
+                        if (holder != null){
+                            holder.itemView.layoutParams.width = LayoutParams.MATCH_PARENT
+                        }
+                    }
+                } else{
+                    for (i in 1 until adapter.itemCount){
+                        val holder = binding.videosRecycleView.findViewHolderForAdapterPosition(i)
+                        if (holder != null){
+                            holder.itemView.layoutParams.width = LayoutParams.MATCH_PARENT
+                            holder.itemView.layoutParams.height = LayoutParams.MATCH_PARENT
+                        }
+                    }
+                    binding.videosRecycleView.layoutManager = linearLayoutManager
+                }
             }
         }
     }
@@ -288,13 +321,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus){
-            Toast.makeText(this, "Height : ${binding.videosRecycleView.height} " +
-                    "Width : ${binding.videosRecycleView.width}", Toast.LENGTH_LONG).show()
-        }
+    private fun getURLforResource(ResID : Int) : String{
+        //Uri.parse("android.resource://"+R.class.getPackage().getName()+"/" +resourceId).toString()
+        val uri = "android.resource://" + applicationContext.packageName + "/" + ResID
+        return Uri.parse(uri).toString()
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -305,52 +337,119 @@ class MainActivity : AppCompatActivity() {
         }
         handler = Handler(Looper.getMainLooper())
 
-//        ChatClient.getInstance().chatManager().addMessageListener {
-//            viewModel.UnreadMark(it.size)
-//        }
-
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
-        gridLayoutManager = GridLayoutManager(this, 3, LinearLayoutManager.HORIZONTAL, false)
+        gridLayoutManager = GridLayoutManager(this, 2, LinearLayoutManager.HORIZONTAL, false)
         linearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
-        binding.videosRecycleView.layoutManager = gridLayoutManager
+        binding.videosRecycleView.layoutManager = linearLayoutManager
         adapter = VideoAdapter()
 
         binding.videosRecycleView.adapter = adapter
 
         viewModel.isScreenSharing.observe(this){isSharing ->
             isShareScreen = isSharing
-            val scale = resources.displayMetrics.density
             if (isSharing){
                 binding.videosRecycleView.layoutManager = linearLayoutManager
-
-                val heightDP : Int = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 150f, resources.displayMetrics).toInt()
-                binding.videosRecycleView.layoutParams.height = (heightDP)
             } else{
                 binding.videosRecycleView.layoutManager = gridLayoutManager
-
-                val heightDP : Int = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 0f, resources.displayMetrics).toInt()
-                binding.videosRecycleView.layoutParams.height = (heightDP)
             }
         }
 
         initVidSDK()
         joinChannel()
 
-//        change icon based on unread
-//        viewModel.unreadMSG.observe(this){
-//            if (it > 0){
-//                binding.btnChat.setImageResource(R.drawable.ic_chat_unread)
-//            } else{
-//                binding.btnChat.setImageResource(R.drawable.ic_chat)
-//            }
-//        }
+        ChatClient.getInstance().chatManager().addMessageListener {messages ->
+            var unreadMSG = 0
+            if( messages != null){
+                for (msg in messages){
+                    if (msg.chatType == ChatMessage.ChatType.ChatRoom && msg.to == chatManager.ROOM_ID){
+                        unreadMSG += 1
+                    }
+                }
+            }
+            viewModel.UnreadMark(unreadMSG)
+        }
 
-        binding.btnShare.setOnClickListener {
+//        change icon based on unread
+        viewModel.unreadMSG.observe(this){
+            if (it > 0){
+                binding.tvUnreadCount.isVisible = true
+                binding.tvUnreadCount.text = it.toString()
+            } else{
+                binding.tvUnreadCount.isVisible = false
+            }
+        }
+
+        binding.btnVolume.setOnClickListener {
+            if (it.tag == "ic_volume"){
+
+                rtcEngine?.muteAllRemoteAudioStreams(true)
+
+                binding.btnVolume.setImageResource(R.drawable.ic_volume_off)
+                binding.btnVolume.tag = "ic_volume_off"
+
+            } else if (it.tag == "ic_volume_off"){
+
+                rtcEngine?.muteAllRemoteAudioStreams(false)
+
+                binding.btnVolume.setImageResource(R.drawable.ic_volume)
+                binding.btnVolume.tag = "ic_volume"
+            }
+        }
+
+        binding.btnVidcam.setOnClickListener {
+
+            if (it.tag == "ic_videocam"){
+
+                rtcEngine?.muteLocalVideoStream(true)
+
+                binding.btnVidcam.setImageResource(R.drawable.ic_videocam_off)
+                binding.btnVidcam.tag = "ic_videocam_off"
+            } else if (it.tag == "ic_videocam_off"){
+
+                rtcEngine?.muteLocalVideoStream(false)
+
+                binding.btnVidcam.setImageResource(R.drawable.ic_videocam)
+                binding.btnVidcam.tag = "ic_videocam"
+            }
+        }
+
+        binding.btnMic.setOnClickListener {
+            if (it.tag == "ic_mic"){
+
+                rtcEngine?.muteLocalAudioStream(true)
+
+                binding.btnMic.setImageResource(R.drawable.ic_mic_off)
+                binding.btnMic.tag = "ic_mic_off"
+
+            } else if (it.tag == "ic_mic_off"){
+
+                rtcEngine?.muteLocalAudioStream(false)
+
+                binding.btnMic.setImageResource(R.drawable.ic_mic)
+                binding.btnMic.tag = "ic_mic"
+            }
+        }
+
+
+        binding.btnMenu.setOnClickListener {
+            if (binding.optionMenu.isVisible){
+                binding.optionMenu.isVisible = false
+            } else{
+                binding.optionMenu.isVisible = true
+            }
+        }
+
+        binding.btnShareScreen.setOnClickListener {
             startShareScreen()
         }
 
+        binding.btnSetting.setOnClickListener {
+            val moveIntent = Intent(this, SettingActivity::class.java)
+            moveIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(moveIntent)
+        }
         binding.btnLeave.setOnClickListener {
             rtcEngine?.stopPreview()
             rtcEngine?.leaveChannel()
@@ -370,38 +469,21 @@ class MainActivity : AppCompatActivity() {
             val moveIntent = Intent(this, ChatActivity::class.java)
             moveIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(moveIntent)
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && binding.screenSharing.isVisible) {
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 //                usePIP()
 //            }
         }
 
     }
 
+
     private fun initVidSDK() {
+        val mAreaCode = (this.application as MainApplication).getGlobalSettings()?.getAreaCode() ?: 0
+        val mCloudConfig = (this.application as MainApplication).getGlobalSettings()?.getPrivateCloudConfig()
+
         try {
-            val config = RtcEngineConfig()
-            config.mContext = baseContext
-            config.mAppId = appId
-            config.mEventHandler = mRtcEventHandler
-            config.mChannelProfile = Constants.CHANNEL_PROFILE_LIVE_BROADCASTING
-            config.mAudioScenario =
-                Constants.AudioScenario.getValue(Constants.AudioScenario.DEFAULT)
-            config.mAreaCode =
-                (this.application as MainApplication).getGlobalSettings()?.getAreaCode() ?: 0
-            rtcEngine = RtcEngine.create(config)
-            rtcEngine?.setParameters(
-                "{"
-                        + "\"rtc.report_app_scenario\":"
-                        + "{"
-                        + "\"appScenario\":" + 100 + ","
-                        + "\"serviceType\":" + 11 + ","
-                        + "\"appVersion\":\"" + RtcEngine.getSdkVersion() + "\""
-                        + "}"
-                        + "}"
-            )
-            rtcEngine?.setLocalAccessPoint(
-                (this.application as MainApplication).getGlobalSettings()?.getPrivateCloudConfig()
-            )
+            VidSDK.initSDK(baseContext, appId, mRtcEventHandler, mAreaCode, mCloudConfig!!)
+            rtcEngine = VidSDK.rtcEngine
             rtcEngine?.enableVideo()
 
         } catch (e: Exception) {
@@ -412,8 +494,7 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onUserLeaveHint() {
-        // user join
-        if (binding.screenSharing.isVisible){
+        if (binding.btnLeave.isVisible){
             usePIP()
         }
     }
@@ -426,7 +507,7 @@ class MainActivity : AppCompatActivity() {
             if(binding.screenSharing.isVisible){
                 Rational(binding.screenSharing.height/2, binding.screenSharing.width/2)
             }else{
-                Rational(binding.videosRecycleView.height, binding.videosRecycleView.width/2)
+                Rational(binding.videosRecycleView.width/2, binding.videosRecycleView.width/2)
             }
         val pipParams = PictureInPictureParams.Builder()
             .setAspectRatio(ratio)
@@ -458,6 +539,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
     override fun onDestroy() {
         super.onDestroy()
         handler.post(RtcEngine::destroy)
@@ -472,5 +554,7 @@ class MainActivity : AppCompatActivity() {
         Thread {
             RtcEngine.destroy()
         }.start()
+
+        Intent.FLAG_ACTIVITY_CLEAR_TASK
     }
 }

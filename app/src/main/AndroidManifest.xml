@@ -28,6 +28,9 @@
         android:theme="@style/Theme.AgoraTesting"
         tools:targetApi="31">
         <activity
+            android:name=".uiActivity.main.SettingActivity"
+            android:exported="false" />
+        <activity
             android:name=".uiActivity.auth.AuthActivity"
             android:exported="true">
             <intent-filter>
@@ -38,20 +41,18 @@
         </activity>
         <activity
             android:name=".uiActivity.chat.ChatActivity"
-            android:exported="false" />
+            android:exported="false"/>
         <activity
             android:name=".uiActivity.TabletMainActivity"
             android:exported="false"
             android:screenOrientation="landscape" />
         <activity
-            android:name=".UIkitAgoraActivity"
-            android:exported="true" />
-        <activity
             android:name=".uiActivity.main.MainActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:exported="false"
             android:supportsPictureInPicture="true"
-            android:taskAffinity=".ChatActivity"></activity>
+            android:taskAffinity=".ChatActivity"
+            />
     </application>
 
 </manifest>

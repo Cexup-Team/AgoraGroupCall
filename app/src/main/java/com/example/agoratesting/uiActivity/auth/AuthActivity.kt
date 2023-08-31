@@ -16,6 +16,7 @@ import com.example.agoratesting.uiActivity.chat.ChatActivity
 import com.example.agoratesting.uiActivity.main.MainActivity
 import com.example.agoratesting.utils.chatManager
 import com.example.agoratesting.utils.userManager
+import com.example.agoratesting.utils.videoManager
 
 class AuthActivity : AppCompatActivity() {
     private lateinit var binding : ActivityAuthBinding
@@ -24,10 +25,10 @@ class AuthActivity : AppCompatActivity() {
     private val ReqID = 22
     private val REQUESTED_PERMISSION =
         arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.CAMERA)
-    private val username = userManager.username
-    private val token = userManager.userToken
-    private val roomID = chatManager.ROOM_ID
-
+    private lateinit var username :String
+    private lateinit var token :String
+    private lateinit var tokenRTC :String
+    private lateinit var roomID : String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAuthBinding.inflate(layoutInflater)
@@ -39,13 +40,23 @@ class AuthActivity : AppCompatActivity() {
             if (isLoading){
                 binding.authPB.isVisible = true
                 binding.joinBtn.isVisible = false
-                binding.p2pBtn.isVisible = false
+                binding.tvError.isVisible = false
+
+                binding.TILUsername.isVisible = false
+                binding.TILRoomId.isVisible = false
+                binding.TILUsertoken.isVisible = false
+                binding.TILRtcToken.isVisible = false
             }
             else{
                 binding.authPB.isVisible = false
                 binding.joinBtn.isVisible = true
-                binding.p2pBtn.isVisible = true
+
+                binding.TILUsername.isVisible = true
+                binding.TILRoomId.isVisible = true
+                binding.TILUsertoken.isVisible = true
+                binding.TILRtcToken.isVisible = true
                 if (viewModel.errorMSG.isNotEmpty()){
+                    binding.tvError.isVisible = true
                     binding.tvError.text = viewModel.errorMSG
                 }
             }
@@ -63,36 +74,25 @@ class AuthActivity : AppCompatActivity() {
             }
         }
 
+
         binding.joinBtn.setOnClickListener {
             if(checkSelfPermission()){
-                viewModel.joinMeeting(username, token, roomID)
+                username = binding.TIEUsername.text.toString()
+                token = binding.TIEUsertoken.text.toString()
+                tokenRTC = binding.TIERtcToken.text.toString()
+                roomID = binding.TIERoomId.text.toString()
+
+                if (username.isNotBlank() && token.isNotBlank() && tokenRTC.isNotBlank() && roomID.isNotBlank()){
+                    userManager.username = username
+                    userManager.userToken = token
+                    videoManager.rtcToken = tokenRTC
+                    chatManager.ROOM_ID = roomID
+                }
+                viewModel.joinMeeting(userManager.username, userManager.userToken, chatManager.ROOM_ID)
                 chatManager.targetID = roomID
             } else{
                 sendPermReq()
             }
-        }
-
-        binding.p2pBtn.setOnClickListener {
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("Peer to Peer Chat")
-            builder.setMessage("To :")
-            val targetUser = EditText(this)
-            targetUser.hint = "(Username)"
-            builder.setView(targetUser)
-
-            builder.setPositiveButton("Join"){dialog : DialogInterface, which:Int ->
-                if (!targetUser.text.isNullOrEmpty()){
-                    val targetID = targetUser.text.toString()
-
-                    viewModel.joinChat_1p(username, token, targetID)
-                    chatManager.targetID = targetID
-                }
-            }
-
-            builder.setNegativeButton("Cancel"){dialog: DialogInterface, which:Int ->
-                dialog.cancel()
-            }
-            builder.show()
         }
 
     }

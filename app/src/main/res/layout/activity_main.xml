@@ -64,13 +64,35 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"/>
 
-        <ImageButton
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/btn_chat"
-            android:background="#0D7F96"
-            android:src="@drawable/ic_chat"
-            android:contentDescription="chat"/>
+            android:layout_height="wrap_content">
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btn_chat"
+                android:background="#0D7F96"
+                android:src="@drawable/ic_chat"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:contentDescription="chat"/>
+
+            <TextView
+                android:id="@+id/tv_unread_count"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:text="0"
+                android:visibility="gone"
+                android:textAlignment="center"
+                android:textSize="10sp"
+                android:textColor="@color/white"
+                android:background="@drawable/red_cirlce_notif"
+                app:layout_constraintTop_toTopOf="@+id/btn_chat"
+                app:layout_constraintEnd_toEndOf="@+id/btn_chat" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
         <Space
             android:layout_weight="1"
             android:layout_width="0dp"
@@ -81,6 +103,7 @@
         android:id="@+id/videosRecycleView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        app:layout_constraintVertical_weight="1"
         app:layout_constraintTop_toBottomOf="@+id/topAppBar"
         app:layout_constraintBottom_toTopOf="@id/screen_sharing"
         tools:listitem="@layout/video_item"/>
@@ -92,9 +115,51 @@
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
         android:visibility="gone"
+        app:layout_constraintVertical_weight="2"
         app:layout_constraintTop_toBottomOf="@id/videosRecycleView"
         app:layout_constraintBottom_toTopOf="@id/botAppBar"/>
 
+    <LinearLayout
+        android:id="@+id/option_menu"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginVertical="5dp"
+        android:showDividers="middle"
+        android:divider="@drawable/line_divider"
+        android:padding="10dp"
+        android:elevation="10dp"
+        android:visibility="gone"
+        android:background="@drawable/background_rounded_corner"
+        android:backgroundTint="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/botAppBar"
+        app:layout_constraintEnd_toEndOf="parent">
+        <TextView
+            android:id="@+id/btn_share_screen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Share Screen"
+            android:gravity="start|center"
+            android:drawablePadding="10dp"
+            android:drawableEnd="@drawable/ic_share_screen"/>
+        <TextView
+            android:id="@+id/btn_audio_mode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start|center"
+            android:text="Audio Mode"
+            android:drawablePadding="10dp"
+            android:drawableEnd="@drawable/ic_audio_mode"/>
+        <TextView
+            android:id="@+id/btn_setting"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start|center"
+            android:text="Setting"
+            android:drawablePadding="10dp"
+            android:drawableEnd="@drawable/ic_setting_gear"/>
+    </LinearLayout>
     <LinearLayout
         android:id="@+id/botAppBar"
         android:layout_width="match_parent"
@@ -112,6 +177,7 @@
             android:id="@+id/btn_volume"
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:tag="ic_volume"
             android:src="@drawable/ic_volume"
             android:background="@drawable/background_button_utils_agora"
             android:contentDescription="qwe" />
@@ -120,10 +186,11 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"/>
         <ImageButton
-            android:id="@+id/btn_camera"
+            android:id="@+id/btn_vidcam"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:src="@drawable/ic_camera"
+            android:tag="ic_videocam"
+            android:src="@drawable/ic_videocam"
             android:background="@drawable/background_button_utils_agora"
             android:contentDescription="qwe" />
         <Space
@@ -152,6 +219,7 @@
             android:id="@+id/btn_mic"
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:tag="ic_mic"
             android:src="@drawable/ic_mic"
             android:background="@drawable/background_button_utils_agora"
             android:contentDescription="qwe" />
@@ -160,7 +228,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"/>
         <ImageButton
-            android:id="@+id/btn_share"
+            android:id="@+id/btn_menu"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:src="@drawable/ic_other_agora"
