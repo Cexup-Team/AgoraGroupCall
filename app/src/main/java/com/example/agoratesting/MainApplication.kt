@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.agoratesting.data.Chat
 import com.example.agoratesting.utils.ClassUtils
 import com.example.agoratesting.utils.TempChat
+import com.example.agoratesting.utils.VidSDK
 import com.example.agoratesting.utils.chatManager
 import io.agora.chat.ChatClient
 import io.agora.chat.ChatOptions
@@ -17,7 +18,6 @@ class MainApplication : Application() {
         super.onCreate()
         initChatSDK()
     }
-
 
     private fun initChatSDK() {
 

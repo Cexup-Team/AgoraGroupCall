@@ -89,7 +89,7 @@ class AuthActivity : AppCompatActivity() {
                     chatManager.ROOM_ID = roomID
                 }
                 viewModel.joinMeeting(userManager.username, userManager.userToken, chatManager.ROOM_ID)
-                chatManager.targetID = roomID
+                chatManager.targetID = chatManager.ROOM_ID
             } else{
                 sendPermReq()
             }

@@ -9,9 +9,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.example.agoratesting.data.AccountInfo
 import com.example.agoratesting.databinding.VideoItemBinding
 
-class VideoAdapter : ListAdapter<SurfaceView, VideoAdapter.ViewHolder>(VideoDiffCallBack) {
+class VideoAdapter: ListAdapter<AccountInfo, VideoAdapter.ViewHolder>(VideoDiffCallBack) {
 
     class ViewHolder(val itemViewBinding: VideoItemBinding) : RecyclerView.ViewHolder(itemViewBinding.root){
         fun onBind(surface : SurfaceView){
@@ -23,11 +24,21 @@ class VideoAdapter : ListAdapter<SurfaceView, VideoAdapter.ViewHolder>(VideoDiff
         }
     }
 
-    fun getItemByTag(uid:Int) : SurfaceView? {
+    fun getPosistionByTag(uid: Int): Int? {
+
+        for (position in 0 until itemCount) {
+            val item = getItem(position)
+            if(item is AccountInfo && item.uid == uid){
+                return position
+            }
+        }
+        return null
+    }
+    fun getItemByTag(uid:Int) : AccountInfo? {
 
         for (i in 0 until itemCount) {
             val item = getItem(i)
-            if(item is SurfaceView && item.tag == uid){
+            if(item is AccountInfo && item.uid == uid){
                 return item
             }
         }
@@ -47,8 +58,9 @@ class VideoAdapter : ListAdapter<SurfaceView, VideoAdapter.ViewHolder>(VideoDiff
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val frame = getItem(position)
-        holder.onBind(frame)
+        val account = getItem(position)
+        Log.w("Surface RV", account.surfaceView.toString())
+        holder.onBind(account.surfaceView)
     }
 
     override fun onViewDetachedFromWindow(holder: ViewHolder) {
@@ -59,7 +71,8 @@ class VideoAdapter : ListAdapter<SurfaceView, VideoAdapter.ViewHolder>(VideoDiff
     override fun onViewAttachedToWindow(holder: ViewHolder) {
         super.onViewAttachedToWindow(holder)
         try {
-            holder.onBind(getItem(holder.layoutPosition))
+            val account = getItem(holder.layoutPosition)
+            holder.onBind(account.surfaceView)
         } catch (e: Exception){
             //to-do
         }
@@ -67,13 +80,13 @@ class VideoAdapter : ListAdapter<SurfaceView, VideoAdapter.ViewHolder>(VideoDiff
 
 }
 
-object VideoDiffCallBack : DiffUtil.ItemCallback<SurfaceView>() {
-    override fun areItemsTheSame(oldItem: SurfaceView, newItem: SurfaceView): Boolean {
+object VideoDiffCallBack : DiffUtil.ItemCallback<AccountInfo>() {
+    override fun areItemsTheSame(oldItem: AccountInfo, newItem: AccountInfo): Boolean {
         return oldItem === newItem
     }
 
     @SuppressLint("DiffUtilEquals")
-    override fun areContentsTheSame(oldItem: SurfaceView, newItem: SurfaceView): Boolean {
+    override fun areContentsTheSame(oldItem: AccountInfo, newItem: AccountInfo): Boolean {
         return oldItem == newItem
     }
 }

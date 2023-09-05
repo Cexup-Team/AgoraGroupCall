@@ -14,12 +14,16 @@ object chatManager {
 object videoManager {
     var APP_ID :String = "a2ab9666ddc44391b17dfbb4a27a2a10"
     var channelName :String = "testcexup"
-    var rtcToken :String = "007eJxTYLB6kX1g6YXFRyeuE/Fhtln3fK+wo9MGx0tS90rCvQ6YzGpVYEg0SkyyNDMzS0lJNjExtjRMMjRPSUtKMkk0MgdKGRrwH3qX0hDIyGBaY8LMyACBID4nQ0lqcUlyakVpAQMDABs7IcE="
+    var rtcToken :String = "007eJxTYPgv1b/wXeuCyu879n0JSLry8/h+tlkzd57UjfrxofyC00MfBYZEo8QkSzMzs5SUZBMTY0vDJEPzlLSkJJNEI3OglKFBxvpvKQ2BjAwsmxMZGKEQxOdkKEktLklOrSgtYGAAAJzGJoc="
 }
 
 object userManager {
+    //tester
     var username :String = "tester"
-    var userToken :String = "007eJxTYJC2lOFr/psX7qbr/CWxzK2h0jPPjF0lpXbzlikRgTsC2BUYEo0SkyzNzMxSUpJNTIwtDZMMzVPSkpJMEo3MgVKGBl6H3qU0BDIyRDFaMzEysDIwAiGIr8JgZpGWaGiRaKBrZGBuomtomJqqm2SWlKhrkmJpZJ5impZkaJgGAOohI9w="
+    var userToken :String = "007eJxTYHhS86D3/vego9/SVKtbIt7cOVRgsSZ84eGDMW+DDn866DhNgSHRKDHJ0szMLCUl2cTE2NIwydA8JS0pySTRyBwoZWjQu/5bSkMgI8OGfVtZGRlYGRiBEMRXYTCzSEs0tEg00DUyMDfRNTRMTdVNMktK1DVJsTQyTzFNSzI0TAMAt1gtSQ=="
+    //tester2
+//    var username :String = "tester2"
+//    var userToken :String = "007eJxTYBA57rXxyzrPp5s2zE4yusyewLhx1onLMY8Lnae2/XaJLNykwJBolJhkaWZmlpKSbGJibGmYZGiekpaUZJJoZA6UMjSYu/5bSkMgI4PXkWBWRgZWBkYgBPFVGFISU4wNDM0NdI2MDAx0DQ1TU3WTjBOBhKmZmUGiWaKRoUUaAFqsKZk="
 }
 
 var TempChat : MutableMap<String, Chat>? = null
