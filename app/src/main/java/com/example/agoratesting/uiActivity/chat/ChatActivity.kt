@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.example.agoratesting.R
 import com.example.agoratesting.databinding.ActivityChatBinding
+import com.example.agoratesting.utils.TempChatRoom
 import com.example.agoratesting.utils.VidSDK
 import com.example.agoratesting.utils.chatManager
 import com.example.agoratesting.utils.userManager
@@ -25,12 +26,13 @@ class ChatActivity : AppCompatActivity(){
     private var targetID :String = chatManager.targetID
     private var isChatRoom : Boolean = chatManager.isChatRoom
 
-    private var rtcEngine = VidSDK.rtcEngine
+    private  var rtcEngine = VidSDK.rtcEngine
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        loadPrevMessage()
         initListener()
 
         binding.btnVidcamChat.setOnClickListener {
@@ -64,11 +66,7 @@ class ChatActivity : AppCompatActivity(){
         }
 
         binding.btnOtherMenu.setOnClickListener {
-            if (binding.optionMenu.isVisible){
-                binding.optionMenu.isVisible = false
-            } else{
-                binding.optionMenu.isVisible = true
-            }
+            binding.optionMenu.isVisible = !binding.optionMenu.isVisible
         }
 
         binding.btnSendChat.setOnClickListener {
@@ -86,6 +84,7 @@ class ChatActivity : AppCompatActivity(){
                         Log.w("Sent Message", "Message Sent Success")
 
                         addChatView(message)
+                        TempChatRoom.add(message)
                         etMessage.clear()
                         binding.scrollChat.fullScroll(View.FOCUS_DOWN)
                     }
@@ -100,6 +99,16 @@ class ChatActivity : AppCompatActivity(){
         }
     }
 
+    private fun loadPrevMessage() {
+        for (i in TempChatRoom){
+            addChatView(i)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        ChatClient.getInstance().chatManager().getConversation(chatManager.ROOM_ID).markAllMessagesAsRead()
+    }
     private fun initListener(){
 
         //chat listener

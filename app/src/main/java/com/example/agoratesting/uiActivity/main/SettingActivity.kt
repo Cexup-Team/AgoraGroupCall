@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import com.example.agoratesting.R
 import com.example.agoratesting.databinding.ActivitySettingBinding
 import com.example.agoratesting.utils.VidSDK
 import io.agora.rtc2.Constants

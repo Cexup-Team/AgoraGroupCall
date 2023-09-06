@@ -2,10 +2,6 @@ package com.example.agoratesting
 
 import android.app.Application
 import android.util.Log
-import com.example.agoratesting.data.Chat
-import com.example.agoratesting.utils.ClassUtils
-import com.example.agoratesting.utils.TempChat
-import com.example.agoratesting.utils.VidSDK
 import com.example.agoratesting.utils.chatManager
 import io.agora.chat.ChatClient
 import io.agora.chat.ChatOptions
@@ -27,6 +23,7 @@ class MainApplication : Application() {
             // Sets your App Key to options.
             Log.w("App Key", chatManager.APP_KEY)
             options.appKey = chatManager.APP_KEY
+            options.requireDeliveryAck = true
             // Initializes the Agora Chat SDK.
             Log.w("Agora Chat SDK", "Initializes the Agora Chat SDK")
             ChatClient.getInstance().init(this, options)
@@ -45,19 +42,6 @@ class MainApplication : Application() {
             globalSettings = GlobalSettings()
         }
         return globalSettings
-    }
-
-    private fun initChatListener(){
-        ChatClient.getInstance().chatManager().addMessageListener { messages ->
-            for (msg in messages){
-                val msgDetail= Chat(
-                    idChat = msg.msgId,
-                    contentChat = parseMessage(msg.body.toString()),
-                    senderChat = msg.from
-                )
-                TempChat?.put(msg.msgId, msgDetail)
-            }
-        }
     }
 
     private fun parseMessage(it:String): String {

@@ -36,10 +36,10 @@ import com.example.agoratesting.uiActivity.chat.ChatActivity
 import com.example.agoratesting.utils.MediaProjectFgService
 import com.example.agoratesting.utils.VidSDK
 import com.example.agoratesting.utils.chatManager
+import com.example.agoratesting.utils.mChatListener
 import com.example.agoratesting.utils.userManager
 import com.example.agoratesting.utils.videoManager
 import io.agora.chat.ChatClient
-import io.agora.chat.ChatMessage
 import io.agora.rtc2.ChannelMediaOptions
 import io.agora.rtc2.Constants
 import io.agora.rtc2.IRtcEngineEventHandler
@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
     private var rtcEngine: RtcEngine? = null
     private lateinit var handler: Handler
     private var listMember = mutableListOf<AccountInfo>()
-    private lateinit var adapter: VideoAdapter
+    private lateinit var adapterVideo: VideoAdapter
     private var uidLocal : Int = 0
     private val uidShareScreen = 1
     private lateinit var fgService: Intent
@@ -72,7 +72,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var gridLayoutManager: GridLayoutManager
     private lateinit var linearLayoutManager: LinearLayoutManager
     private var isShareScreen : Boolean = false
-    private var unreadCount = 0
 
     private fun checkSelfPermission(): Boolean {
         if (ContextCompat.checkSelfPermission(
@@ -191,8 +190,8 @@ class MainActivity : AppCompatActivity() {
         val userAccount = AccountInfo(uidLocal, "Local User", surfaceView)
         listMember.add(userAccount)
 
-        adapter.submitList(listMember)
-        adapter.notifyItemChanged(listMember.indexOf(adapter.getItemByTag(uidLocal)))
+        adapterVideo.submitList(listMember)
+        adapterVideo.notifyItemChanged(listMember.indexOf(adapterVideo.getItemByTag(uidLocal)))
 
         binding.member.text = "${listMember.size}"
     }
@@ -216,12 +215,11 @@ class MainActivity : AppCompatActivity() {
                 val userAccount = AccountInfo(uid, "Remote User $uid", surfaceView)
                 listMember.add(userAccount)
 
-                adapter.submitList(listMember)
-                adapter.notifyItemChanged(adapter.currentList.size - 1)
+                adapterVideo.submitList(listMember)
+                adapterVideo.notifyItemChanged(adapterVideo.currentList.size - 1)
 
                 binding.member.text = "${listMember.size}"
-                binding.videosRecycleView.adapter = adapter
-                if(adapter.itemCount >= 2){
+                if(adapterVideo.itemCount >= 2){
                     binding.videosRecycleView.layoutManager = gridLayoutManager
                 }
             }
@@ -252,7 +250,7 @@ class MainActivity : AppCompatActivity() {
         override fun onRemoteVideoStateChanged(uid: Int, state: Int, reason: Int, elapsed: Int) {
             super.onRemoteVideoStateChanged(uid, state, reason, elapsed)
             if (reason == 5 || reason == 6){
-                runOnUiThread { adapter.notifyDataSetChanged()}
+                runOnUiThread { adapterVideo.notifyDataSetChanged()}
             }
         }
         override fun onJoinChannelSuccess(channel: String?, uid: Int, elapsed: Int) {
@@ -265,21 +263,20 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread { showMessage("Remote User Offline $uid $reason") }
             handler.post {
                 rtcEngine?.setupRemoteVideo(VideoCanvas(null, VideoCanvas.RENDER_MODE_HIDDEN, uid))
-                val position = listMember.indexOf(adapter.getItemByTag(uid))
-                listMember.remove(adapter.getItemByTag(uid))
-                adapter.notifyItemRemoved(position)
+                val position = listMember.indexOf(adapterVideo.getItemByTag(uid))
+                listMember.remove(adapterVideo.getItemByTag(uid))
+                adapterVideo.notifyItemRemoved(position)
 
                 binding.member.text = "${listMember.size}"
-                binding.videosRecycleView.adapter = adapter
-                if(adapter.itemCount == 2){
-                    for (i in 1 until adapter.itemCount){
+                if(adapterVideo.itemCount == 2){
+                    for (i in 1 until adapterVideo.itemCount){
                         val holder = binding.videosRecycleView.findViewHolderForAdapterPosition(i)
                         if (holder != null){
                             holder.itemView.layoutParams.width = LayoutParams.MATCH_PARENT
                         }
                     }
                 } else{
-                    for (i in 1 until adapter.itemCount){
+                    for (i in 1 until adapterVideo.itemCount){
                         val holder = binding.videosRecycleView.findViewHolderForAdapterPosition(i)
                         if (holder != null){
                             holder.itemView.layoutParams.width = LayoutParams.MATCH_PARENT
@@ -294,8 +291,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun joinChannel() {
         if (checkSelfPermission()) {
-            binding.btnJoin.visibility = View.GONE
-            binding.btnLeave.visibility = View.VISIBLE
             val options= ChannelMediaOptions()
             options.channelProfile = Constants.CHANNEL_PROFILE_COMMUNICATION
             options.clientRoleType = Constants.CLIENT_ROLE_BROADCASTER
@@ -308,10 +303,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkUnread(){
-        if (unreadCount > 0){
+    fun checkUnread(){
+        val unread = ChatClient.getInstance().chatManager().getConversation(chatManager.ROOM_ID).unreadMsgCount
+        if ( unread > 0){
             binding.tvUnreadCount.isVisible = true
-            binding.tvUnreadCount.text = unreadCount.toString()
+            binding.tvUnreadCount.text = unread.toString()
         }else{
             binding.tvUnreadCount.isVisible = false
         }
@@ -332,12 +328,12 @@ class MainActivity : AppCompatActivity() {
         linearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
         binding.videosRecycleView.layoutManager = linearLayoutManager
-        adapter = VideoAdapter()
+        adapterVideo = VideoAdapter()
 
         initVidSDK()
         joinChannel()
 
-        binding.videosRecycleView.adapter = adapter
+        binding.videosRecycleView.adapter = adapterVideo
 
         viewModel.isScreenSharing.observe(this){isSharing ->
             isShareScreen = isSharing
@@ -348,15 +344,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        ChatClient.getInstance().chatManager().addMessageListener(mChatListener)
         ChatClient.getInstance().chatManager().addMessageListener {
-            for (message in it){
-                if (message.chatType == ChatMessage.ChatType.ChatRoom && message.to == chatManager.ROOM_ID){
-                    unreadCount += 1
-                    Log.w("Unread Message", "Unread Message + 1")
-                    runOnUiThread { checkUnread() }
-                }
-            }
+            runOnUiThread { checkUnread() }
         }
+
         binding.btnVolume.setOnClickListener {
             if (it.tag == "ic_volume"){
 
@@ -375,7 +367,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnVidcam.setOnClickListener {
-            val user = adapter.getItemByTag(uidLocal)
             if (it.tag == "ic_videocam"){
                 rtcEngine?.muteLocalVideoStream(true)
                 rtcEngine?.stopPreview()
@@ -383,7 +374,7 @@ class MainActivity : AppCompatActivity() {
                 binding.btnVidcam.setImageResource(R.drawable.ic_videocam_off)
                 binding.btnVidcam.tag = "ic_videocam_off"
 
-                adapter.notifyDataSetChanged()
+                adapterVideo.notifyDataSetChanged()
             } else if (it.tag == "ic_videocam_off"){
 
                 rtcEngine?.muteLocalVideoStream(false)
@@ -392,7 +383,7 @@ class MainActivity : AppCompatActivity() {
                 binding.btnVidcam.setImageResource(R.drawable.ic_videocam)
                 binding.btnVidcam.tag = "ic_videocam"
 
-                adapter.notifyDataSetChanged()
+                adapterVideo.notifyDataSetChanged()
             }
         }
 
@@ -415,11 +406,7 @@ class MainActivity : AppCompatActivity() {
 
 
         binding.btnMenu.setOnClickListener {
-            if (binding.optionMenu.isVisible){
-                binding.optionMenu.isVisible = false
-            } else{
-                binding.optionMenu.isVisible = true
-            }
+            binding.optionMenu.isVisible = !binding.optionMenu.isVisible
         }
 
         binding.btnShareScreen.setOnClickListener {
@@ -439,7 +426,7 @@ class MainActivity : AppCompatActivity() {
                 try {
                     rtcEngine?.muteAllRemoteVideoStreams(false)
                     dialog.cancel()
-                    adapter.notifyDataSetChanged()
+                    adapterVideo.notifyDataSetChanged()
                 }catch (e: Exception){
                     Log.w("muteAllRemoteVideoStreams", "muteAllRemoteVideoStreams(false)")
                 }
@@ -449,7 +436,7 @@ class MainActivity : AppCompatActivity() {
                 try {
                     rtcEngine?.muteAllRemoteVideoStreams(true)
                     dialog.cancel()
-                    adapter.notifyDataSetChanged()
+                    adapterVideo.notifyDataSetChanged()
                 }catch (e: Exception){
                     Log.w("muteAllRemoteVideoStreams", "muteAllRemoteVideoStreams(true)")
                 }
@@ -465,14 +452,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(moveIntent)
         }
         binding.btnLeave.setOnClickListener {
-            rtcEngine?.stopPreview()
-            rtcEngine?.leaveChannel()
-            rtcEngine?.setupLocalVideo(VideoCanvas(null, VideoCanvas.RENDER_MODE_HIDDEN, uidLocal))
-            rtcEngine?.setupRemoteVideo(VideoCanvas(null, VideoCanvas.RENDER_MODE_HIDDEN))
-            binding.btnLeave.visibility = View.GONE
-            binding.btnJoin.visibility = View.VISIBLE
-            listMember.clear()
-            adapter.notifyDataSetChanged()
             finish()
         }
 
@@ -483,7 +462,6 @@ class MainActivity : AppCompatActivity() {
                 Log.e("Exception", e.message.toString())
             }
 
-            unreadCount = 0
             val moveIntent = Intent(this, ChatActivity::class.java)
             moveIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(moveIntent)
@@ -558,6 +536,15 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        try {
+            checkUnread()
+        } catch (e:Exception){
+            Log.e("Exception", e.message.toString())
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         handler.post(RtcEngine::destroy)
@@ -567,6 +554,11 @@ class MainActivity : AppCompatActivity() {
         rtcEngine?.setupLocalVideo(VideoCanvas(null, VideoCanvas.RENDER_MODE_HIDDEN, uidLocal))
         rtcEngine?.setupRemoteVideo(VideoCanvas(null, VideoCanvas.RENDER_MODE_HIDDEN))
         listMember.clear()
+
+        ChatClient.getInstance().chatManager().removeMessageListener(mChatListener)
+        ChatClient.getInstance().chatManager().removeMessageListener {
+            runOnUiThread { checkUnread() }
+        }
 
         ChatClient.getInstance().logout(true)
         Thread {

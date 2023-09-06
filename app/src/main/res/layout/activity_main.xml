@@ -201,16 +201,8 @@
             android:layout_width="76.30512dp"
             android:layout_height="65.99363dp"
             android:src="@drawable/ic_telephone_hangup"
-            android:background="@drawable/background_button_join_call"
-            android:contentDescription="join call"
-            android:id="@+id/btn_join"/>
-        <ImageButton
-            android:layout_width="76.30512dp"
-            android:layout_height="65.99363dp"
-            android:src="@drawable/ic_telephone_hangup"
             android:background="@drawable/background_button_end_call"
-            android:id="@+id/btn_leave"
-            android:visibility="gone"/>
+            android:id="@+id/btn_leave"/>
         <Space
             android:layout_weight="1"
             android:layout_width="0dp"
