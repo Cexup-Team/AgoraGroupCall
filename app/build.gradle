@@ -38,6 +38,8 @@ android {
 
 
 dependencies {
+    //glide
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
 
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     def agora_sdk_version = "4.1.1"

@@ -2,21 +2,31 @@ package com.example.agoratesting.uiActivity
 
 import android.annotation.SuppressLint
 import android.app.ActionBar.LayoutParams
-import android.util.Log
 import android.view.LayoutInflater
-import android.view.SurfaceView
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.agoratesting.data.AccountInfo
 import com.example.agoratesting.databinding.VideoItemBinding
 
 class VideoAdapter: ListAdapter<AccountInfo, VideoAdapter.ViewHolder>(VideoDiffCallBack) {
 
     class ViewHolder(val itemViewBinding: VideoItemBinding) : RecyclerView.ViewHolder(itemViewBinding.root){
-        fun onBind(surface : SurfaceView){
-            itemViewBinding.videoFrame.addView(surface)
+        fun onBind(account : AccountInfo){
+            if (!account.offCam){
+                itemViewBinding.videoFrame.addView(account.surfaceView)
+            } else{
+                val placeholder = ImageView(itemView.context)
+                Glide
+                    .with(itemView.context)
+                    .load("https://ui-avatars.com/api/?background=random&name=${account.username}")
+                    .into(placeholder)
+
+                itemViewBinding.videoFrame.addView(placeholder)
+            }
         }
 
         fun unBind(){
@@ -24,16 +34,6 @@ class VideoAdapter: ListAdapter<AccountInfo, VideoAdapter.ViewHolder>(VideoDiffC
         }
     }
 
-    fun getPosistionByTag(uid: Int): Int? {
-
-        for (position in 0 until itemCount) {
-            val item = getItem(position)
-            if(item is AccountInfo && item.uid == uid){
-                return position
-            }
-        }
-        return null
-    }
     fun getItemByTag(uid:Int) : AccountInfo? {
 
         for (i in 0 until itemCount) {
@@ -59,8 +59,7 @@ class VideoAdapter: ListAdapter<AccountInfo, VideoAdapter.ViewHolder>(VideoDiffC
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val account = getItem(position)
-        Log.w("Surface RV", account.surfaceView.toString())
-        holder.onBind(account.surfaceView)
+        holder.onBind(account)
     }
 
     override fun onViewDetachedFromWindow(holder: ViewHolder) {
@@ -72,7 +71,7 @@ class VideoAdapter: ListAdapter<AccountInfo, VideoAdapter.ViewHolder>(VideoDiffC
         super.onViewAttachedToWindow(holder)
         try {
             val account = getItem(holder.layoutPosition)
-            holder.onBind(account.surfaceView)
+            holder.onBind(account)
         } catch (e: Exception){
             //to-do
         }

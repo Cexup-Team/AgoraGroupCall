@@ -50,6 +50,8 @@ import io.agora.rtc2.video.VideoCanvas
 import io.agora.rtc2.video.VideoEncoderConfiguration
 import io.agora.rtc2.video.VideoEncoderConfiguration.FRAME_RATE
 import io.agora.rtc2.video.VideoEncoderConfiguration.ORIENTATION_MODE
+import java.util.Timer
+import java.util.TimerTask
 
 
 class MainActivity : AppCompatActivity() {
@@ -187,7 +189,7 @@ class MainActivity : AppCompatActivity() {
             )
         )
 
-        val userAccount = AccountInfo(uidLocal, "Local User", surfaceView)
+        val userAccount = AccountInfo(uidLocal, "Local User", surfaceView, false)
         listMember.add(userAccount)
 
         adapterVideo.submitList(listMember)
@@ -212,7 +214,7 @@ class MainActivity : AppCompatActivity() {
                     )
                 )
 
-                val userAccount = AccountInfo(uid, "Remote User $uid", surfaceView)
+                val userAccount = AccountInfo(uid, "Remote User $uid", surfaceView,false)
                 listMember.add(userAccount)
 
                 adapterVideo.submitList(listMember)
@@ -228,30 +230,33 @@ class MainActivity : AppCompatActivity() {
         override fun onLocalUserRegistered(uid: Int, userAccount: String?) {
             super.onLocalUserRegistered(uid, userAccount)
             if (userAccount != null) {
-                for (i in 0 until  listMember.size){
-                    if (listMember[i].uid == uid){
-                        listMember[i].username = userAccount
+                Timer().schedule(object : TimerTask(){
+                    override fun run() {
+                        listMember.find { it.uid == uid }?.username = userAccount
                     }
-                }
+                }, 1000)
             }
         }
 
         override fun onUserInfoUpdated(uid: Int, userInfo: UserInfo?) {
             super.onUserInfoUpdated(uid, userInfo)
             if (userInfo != null) {
-                for (i in 0 until  listMember.size){
-                    if (listMember[i].uid == uid){
-                        listMember[i].username = userInfo.userAccount
+                Timer().schedule(object : TimerTask(){
+                    override fun run() {
+                        listMember.find { it.uid == uid }?.username = userInfo.userAccount
                     }
-                }
+                }, 1000)
             }
         }
 
         override fun onRemoteVideoStateChanged(uid: Int, state: Int, reason: Int, elapsed: Int) {
             super.onRemoteVideoStateChanged(uid, state, reason, elapsed)
-            if (reason == 5 || reason == 6){
-                runOnUiThread { adapterVideo.notifyDataSetChanged()}
+            if (reason == 5){
+                listMember.find { it.uid == uid }?.offCam = true
+            } else if (reason == 6){
+                listMember.find { it.uid == uid }?.offCam = false
             }
+            runOnUiThread { adapterVideo.notifyDataSetChanged()}
         }
         override fun onJoinChannelSuccess(channel: String?, uid: Int, elapsed: Int) {
             runOnUiThread { showMessage("Joined Channel $channel") }
@@ -303,7 +308,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun checkUnread(){
+    private fun checkUnread(){
         val unread = ChatClient.getInstance().chatManager().getConversation(chatManager.ROOM_ID).unreadMsgCount
         if ( unread > 0){
             binding.tvUnreadCount.isVisible = true
@@ -374,6 +379,7 @@ class MainActivity : AppCompatActivity() {
                 binding.btnVidcam.setImageResource(R.drawable.ic_videocam_off)
                 binding.btnVidcam.tag = "ic_videocam_off"
 
+                listMember[0].offCam = true
                 adapterVideo.notifyDataSetChanged()
             } else if (it.tag == "ic_videocam_off"){
 
@@ -383,6 +389,7 @@ class MainActivity : AppCompatActivity() {
                 binding.btnVidcam.setImageResource(R.drawable.ic_videocam)
                 binding.btnVidcam.tag = "ic_videocam"
 
+                listMember[0].offCam = false
                 adapterVideo.notifyDataSetChanged()
             }
         }

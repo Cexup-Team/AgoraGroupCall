@@ -6,4 +6,5 @@ data class AccountInfo(
     var uid : Int,
     var username : String,
     var surfaceView: SurfaceView,
+    var offCam : Boolean,
 )
