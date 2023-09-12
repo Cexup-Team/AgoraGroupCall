@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-parcelize'
 }
 
 android {
@@ -38,6 +39,14 @@ android {
 
 
 dependencies {
+
+    //datastore
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.6.2"
+
+    //glide
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
 
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     def agora_sdk_version = "4.1.1"

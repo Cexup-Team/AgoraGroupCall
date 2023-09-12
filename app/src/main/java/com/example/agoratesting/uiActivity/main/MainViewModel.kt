@@ -6,15 +6,8 @@ import androidx.lifecycle.ViewModel
 
 class MainViewModel : ViewModel() {
 
-    private val _ureadMSG = MutableLiveData<Int>()
-    val unreadMSG :LiveData<Int> = _ureadMSG
-
     private val _isScreenSharing = MutableLiveData<Boolean>()
     val isScreenSharing : LiveData<Boolean> = _isScreenSharing
-
-    fun UnreadMark(count : Int){
-        _ureadMSG.postValue(count)
-    }
 
     fun ChangeSharingState(isSharing : Boolean){
         if (isSharing){

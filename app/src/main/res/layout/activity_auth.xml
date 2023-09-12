@@ -5,18 +5,18 @@
     android:id="@+id/activity_auth"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:paddingHorizontal="21.58dp"
     android:paddingVertical="34.52dp"
-    android:fitsSystemWindows="true"
     tools:context=".uiActivity.auth.AuthActivity">
 
     <LinearLayout
         android:id="@+id/topAppBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingVertical="15.52dp"
-        android:gravity="center"
         android:background="@drawable/background_top_bottom_bar"
+        android:gravity="center"
+        android:paddingVertical="15.52dp"
         android:weightSum="5"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -24,9 +24,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Meeting Mingguan"
-            android:textSize="20.58sp"
+            android:textColor="@color/white"
             android:textFontWeight="500"
-            android:textColor="@color/white"/>
+            android:textSize="20.58sp" />
     </LinearLayout>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -34,114 +34,79 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginVertical="10dp"
-        app:layout_constraintWidth_percent="0.7"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintVertical_bias="0.3"
-        app:layout_constraintStart_toStartOf="parent"
+        app:hintEnabled="true"
+        app:layout_constraintBottom_toTopOf="@id/TIL_password"
         app:layout_constraintEnd_toEndOf="parent"
-        app:hintEnabled="true">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintWidth_percent="0.7">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/TIE_username"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:maxLines="2"
-            android:hint="Username"/>
+            android:hint="Username"
+            android:maxLines="2" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/TIL_room_id"
+        android:id="@+id/TIL_password"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginVertical="10dp"
-        app:layout_constraintWidth_percent="0.7"
+        app:hintEnabled="true"
+        app:layout_constraintBottom_toTopOf="@id/join_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/TIL_username"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:hintEnabled="true">
+        app:layout_constraintWidth_percent="0.7">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/TIE_room_id"
+            android:id="@+id/TIE_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:maxLines="2"
-            android:hint="Room ID"/>
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/TIL_usertoken"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintWidth_percent="0.7"
-        app:layout_constraintTop_toBottomOf="@id/TIL_room_id"
-        android:layout_marginVertical="10dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:hintEnabled="true">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/TIE_usertoken"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxLines="2"
-            android:hint="User Token"/>
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/TIL_rtc_token"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintWidth_percent="0.7"
-        app:layout_constraintTop_toBottomOf="@id/TIL_usertoken"
-        android:layout_marginVertical="10dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:hintEnabled="true">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/TIE_rtc_token"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxLines="2"
-            android:hint="RTC Token"/>
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:maxLines="2" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/join_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingVertical="10dp"
-        android:paddingHorizontal="20dp"
-        android:backgroundTint="#0D7F95"
-        app:layout_constraintTop_toBottomOf="@id/TIL_rtc_token"
         android:layout_marginVertical="10dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:backgroundTint="#0D7F95"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="10dp"
         android:text="Join Meeting"
-        android:textSize="20.58sp"
+        android:textColor="@color/white"
         android:textFontWeight="500"
-        android:textColor="@color/white"/>
+        android:textSize="20.58sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/TIL_password" />
 
 
     <TextView
         android:id="@+id/tv_error"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="ERROR MESSAGE"
-        app:layout_constraintVertical_bias="0.1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/join_btn"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintVertical_bias="0.1"
+        tools:text="ERROR MESSAGE" />
 
     <ProgressBar
         android:id="@+id/auth_PB"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:visibility="gone"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

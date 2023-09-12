@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import com.example.agoratesting.databinding.ActivitySettingBinding
 import com.example.agoratesting.utils.VidSDK
 import io.agora.rtc2.Constants
@@ -19,6 +20,15 @@ class SettingActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener 
         setContentView(binding.root)
 
         binding.spinnerRes.onItemSelectedListener = this
+
+        val arrayAdapter = ArrayAdapter(
+            this,
+            androidx.appcompat.R.layout.support_simple_spinner_dropdown_item,
+            resOption
+        )
+
+        arrayAdapter.setDropDownViewResource(androidx.appcompat.R.layout.support_simple_spinner_dropdown_item)
+        binding.spinnerRes.adapter = arrayAdapter
     }
 
     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {

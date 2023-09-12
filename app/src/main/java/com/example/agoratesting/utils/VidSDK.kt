@@ -26,7 +26,7 @@ object VidSDK {
             config.mChannelProfile = Constants.CHANNEL_PROFILE_LIVE_BROADCASTING
             config.mAudioScenario =
                 Constants.AudioScenario.getValue(Constants.AudioScenario.DEFAULT)
-            config.mAreaCode = mAreaCode ?: 0
+            config.mAreaCode = mAreaCode
             rtcEngine = RtcEngine.create(config)
             rtcEngine?.setParameters(
                 "{"
