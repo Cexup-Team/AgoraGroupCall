@@ -10,11 +10,11 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.agoratesting.data.AccountInfo
-import com.example.agoratesting.databinding.VideoItemBinding
+import com.example.agoratesting.databinding.ItemVideoBinding
 
 class VideoAdapter: ListAdapter<AccountInfo, VideoAdapter.ViewHolder>(VideoDiffCallBack) {
 
-    class ViewHolder(val itemViewBinding: VideoItemBinding) : RecyclerView.ViewHolder(itemViewBinding.root){
+    class ViewHolder(val itemViewBinding: ItemVideoBinding) : RecyclerView.ViewHolder(itemViewBinding.root){
         fun onBind(account : AccountInfo){
             if (!account.offCam){
                 itemViewBinding.videoFrame.addView(account.surfaceView)
@@ -46,7 +46,7 @@ class VideoAdapter: ListAdapter<AccountInfo, VideoAdapter.ViewHolder>(VideoDiffC
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = VideoItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = ItemVideoBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         val lp = binding.videoFrame.layoutParams
         lp.height = LayoutParams.MATCH_PARENT
         if (itemCount > 2){

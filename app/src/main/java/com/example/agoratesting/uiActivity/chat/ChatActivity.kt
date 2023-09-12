@@ -10,8 +10,6 @@ import com.example.agoratesting.R
 import com.example.agoratesting.databinding.ActivityChatBinding
 import com.example.agoratesting.utils.TempChatRoom
 import com.example.agoratesting.utils.VidSDK
-import com.example.agoratesting.utils.chatManager
-import com.example.agoratesting.utils.userManager
 import io.agora.CallBack
 import io.agora.ConnectionListener
 import io.agora.chat.ChatClient
@@ -22,9 +20,7 @@ class ChatActivity : AppCompatActivity(){
 
 
     private lateinit var binding: ActivityChatBinding
-
-    private var targetID :String = chatManager.targetID
-    private var isChatRoom : Boolean = chatManager.isChatRoom
+    private lateinit var roomID : String
 
     private  var rtcEngine = VidSDK.rtcEngine
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,6 +28,7 @@ class ChatActivity : AppCompatActivity(){
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        roomID = intent.getStringExtra("ROOM_ID") ?: ""
         loadPrevMessage()
         initListener()
 
@@ -72,12 +69,8 @@ class ChatActivity : AppCompatActivity(){
         binding.btnSendChat.setOnClickListener {
             val etMessage = binding.etChat.text
             if (etMessage.isNotBlank()){
-                val message = ChatMessage.createTextSendMessage(etMessage.toString(), targetID)
-                if (isChatRoom){
-                    message.chatType = ChatType.ChatRoom
-                } else{
-                    message.chatType = ChatType.Chat
-                }
+                val message = ChatMessage.createTextSendMessage(etMessage.toString(), roomID)
+                message.chatType = ChatType.ChatRoom
                 message.setMessageStatusCallback(object : CallBack{
                     override fun onSuccess() {
                         Log.w("Send CallBack", "Message Sent Successfully")
@@ -107,7 +100,7 @@ class ChatActivity : AppCompatActivity(){
 
     override fun onDestroy() {
         super.onDestroy()
-        ChatClient.getInstance().chatManager().getConversation(chatManager.ROOM_ID).markAllMessagesAsRead()
+        ChatClient.getInstance().chatManager().getConversation(roomID).markAllMessagesAsRead()
     }
     private fun initListener(){
 
@@ -119,9 +112,7 @@ class ChatActivity : AppCompatActivity(){
                 Log.w("Messages", "Size : ${messages.size}")
 
                 for (msg in messages) {
-                    if (msg.from == targetID){
-                        addChatView(msg)
-                    } else if (msg.chatType == ChatType.ChatRoom && msg.to == targetID){
+                    if (msg.chatType == ChatType.ChatRoom && msg.to == roomID){
                         addChatView(msg)
                     }
                 }
@@ -158,13 +149,13 @@ class ChatActivity : AppCompatActivity(){
         runOnUiThread {
             val messageContent = parseMessage(message.body.toString())
             val viewListChat = binding.chatLog
-            if (message.from == userManager.username){
-                val viewChat = layoutInflater.inflate(R.layout.chat_sent, null)
+            if (message.from == ChatClient.getInstance().currentUser){
+                val viewChat = layoutInflater.inflate(R.layout.item_chat_sent, null)
                 viewChat.findViewById<TextView>(R.id.sent_username).text = message.from
                 viewChat.findViewById<TextView>(R.id.sent_message).text = messageContent
                 viewListChat.addView(viewChat)
             } else{
-                val viewChat = layoutInflater.inflate(R.layout.chat_received, null)
+                val viewChat = layoutInflater.inflate(R.layout.item_chat_received, null)
                 viewChat.findViewById<TextView>(R.id.received_username).text = message.from
                 viewChat.findViewById<TextView>(R.id.received_message).text = messageContent
 

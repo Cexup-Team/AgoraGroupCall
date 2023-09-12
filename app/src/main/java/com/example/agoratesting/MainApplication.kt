@@ -2,7 +2,7 @@ package com.example.agoratesting
 
 import android.app.Application
 import android.util.Log
-import com.example.agoratesting.utils.chatManager
+import com.example.agoratesting.utils.SDKManager
 import io.agora.chat.ChatClient
 import io.agora.chat.ChatOptions
 
@@ -21,9 +21,10 @@ class MainApplication : Application() {
             val options =  ChatOptions()
 
             // Sets your App Key to options.
-            Log.w("App Key", chatManager.APP_KEY)
-            options.appKey = chatManager.APP_KEY
+            Log.w("App Key", SDKManager.APP_KEY)
+            options.appKey = SDKManager.APP_KEY
             options.requireDeliveryAck = true
+            options.autoLogin = true
             // Initializes the Agora Chat SDK.
             Log.w("Agora Chat SDK", "Initializes the Agora Chat SDK")
             ChatClient.getInstance().init(this, options)
