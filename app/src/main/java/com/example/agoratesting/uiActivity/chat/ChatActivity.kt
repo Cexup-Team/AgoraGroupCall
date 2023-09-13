@@ -28,7 +28,7 @@ class ChatActivity : AppCompatActivity(){
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        roomID = intent.getStringExtra("ROOM_ID") ?: ""
+        roomID = intent.getStringExtra("ROOM_ID")!!
         loadPrevMessage()
         initListener()
 
@@ -73,8 +73,8 @@ class ChatActivity : AppCompatActivity(){
                 message.chatType = ChatType.ChatRoom
                 message.setMessageStatusCallback(object : CallBack{
                     override fun onSuccess() {
-                        Log.w("Send CallBack", "Message Sent Successfully")
                         Log.w("Sent Message", "Message Sent Success")
+                        Log.w("Sent Message", "Room ID : $roomID")
 
                         addChatView(message)
                         TempChatRoom.add(message)
@@ -100,7 +100,11 @@ class ChatActivity : AppCompatActivity(){
 
     override fun onDestroy() {
         super.onDestroy()
-        ChatClient.getInstance().chatManager().getConversation(roomID).markAllMessagesAsRead()
+        try {
+            ChatClient.getInstance().chatManager().getConversation(roomID).markAllMessagesAsRead()
+        } catch (e: Exception){
+            Log.e("Exception", e.message ?:"")
+        }
     }
     private fun initListener(){
 
