@@ -5,23 +5,33 @@ import com.example.agoratesting.data.User
 
 internal class DataPreference(context: Context){
 
-    private val preferences = context.getSharedPreferences("user_pref", Context.MODE_PRIVATE)
+    private val preferences = context.getSharedPreferences("USER_PREF", Context.MODE_PRIVATE)
 
-    fun getUser(): User{
-        val user = User()
-        user.username = preferences.getString("USERNAME", "")
-        user.password = preferences.getString("PASSWORD", "")
-        return user
+    fun getResolution():String?{
+        return preferences.getString("Resolution", "")
     }
-
-    fun saveToken(user: User){
+    fun saveResolution(Res : String){
         val editor = preferences.edit()
-        editor.putString("USERNAME", user.username)
-        editor.putString("PASSWORD", user.password)
+        editor.putString("Resolution", Res)
+        editor.apply()
     }
 
-    fun deleteToken(){
-        preferences.edit().clear().apply()
+    fun getPrefBG():String?{
+        return preferences.getString("PrefBG", "")
+    }
+    fun savePrefBG(Res : String){
+        val editor = preferences.edit()
+        editor.putString("PrefBG", Res)
+        editor.apply()
+    }
+
+    fun getColorBG():Int{
+        return preferences.getInt("ColorBG", 0x000000)
+    }
+    fun saveColorBG(color : Int){
+        val editor = preferences.edit()
+        editor.putInt("ColorBG", color)
+        editor.apply()
     }
 
 }

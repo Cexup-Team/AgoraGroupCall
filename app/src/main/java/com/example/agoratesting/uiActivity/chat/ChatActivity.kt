@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.example.agoratesting.R
 import com.example.agoratesting.databinding.ActivityChatBinding
-import com.example.agoratesting.utils.TempChatRoom
+import com.example.agoratesting.utils.TempMeeting
 import com.example.agoratesting.utils.VidSDK
 import io.agora.CallBack
 import io.agora.ConnectionListener
@@ -77,7 +77,7 @@ class ChatActivity : AppCompatActivity(){
                         Log.w("Sent Message", "Room ID : $roomID")
 
                         addChatView(message)
-                        TempChatRoom.add(message)
+                        TempMeeting.TempChatRoom.add(message)
                         etMessage.clear()
                         binding.scrollChat.fullScroll(View.FOCUS_DOWN)
                     }
@@ -93,7 +93,7 @@ class ChatActivity : AppCompatActivity(){
     }
 
     private fun loadPrevMessage() {
-        for (i in TempChatRoom){
+        for (i in TempMeeting.TempChatRoom){
             addChatView(i)
         }
     }

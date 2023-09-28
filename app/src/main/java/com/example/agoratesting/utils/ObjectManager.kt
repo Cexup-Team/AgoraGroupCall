@@ -1,5 +1,6 @@
 package com.example.agoratesting.utils
 
+import com.example.agoratesting.data.AccountInfo
 import com.example.agoratesting.data.MeetingInfo
 import com.example.agoratesting.data.MeetingRoom
 import io.agora.chat.ChatMessage
@@ -15,10 +16,14 @@ var dummyMeetingList = listOf(
         "Tuesday",
         "09/12/2023",
         MeetingRoom(
-            "007eJxTYGCu1wlmunTyZV5Fpcv32Bez7KeVxF21NRY1vTqPUzZfsVqBIdEoMcnSzMwsJSXZxMTY0jDJ0DwlLSnJJNHIHChlaGAWwpjaEMjI4JcQx8jIAIEgPidDSWpxSXJqRWkBAwMARe0eug==",
+            "007eJxTYDihMsFw+f/ZqzX/1f3hkj6jyfD6cLf4kTfrK9en7V0THvVBgSHRKDHJ0szMLCUl2cTE2NIwydA8JS0pySTRyBwoZWgQc144tSGQkeHZm0wGRigE8TkZSlKLS5JTK0oLGBgAuG0kXA==",
             "testcexup",
             "219929636831233"),
         "personID"),
 )
 
-var TempChatRoom = mutableListOf<ChatMessage>()
+object TempMeeting{
+    var TempChatRoom = mutableListOf<ChatMessage>()
+
+    var ListMember = mutableListOf<AccountInfo>()
+}

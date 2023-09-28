@@ -11,12 +11,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.agoratesting.data.AccountInfo
 import com.example.agoratesting.databinding.ItemVideoBinding
+import kotlin.math.acos
 
 class VideoAdapter: ListAdapter<AccountInfo, VideoAdapter.ViewHolder>(VideoDiffCallBack) {
 
     class ViewHolder(val itemViewBinding: ItemVideoBinding) : RecyclerView.ViewHolder(itemViewBinding.root){
         fun onBind(account : AccountInfo){
             if (!account.offCam){
+                if (account.surfaceView.parent != null){
+                    (account.surfaceView.parent as ViewGroup).removeView(account.surfaceView)
+                }
                 itemViewBinding.videoFrame.addView(account.surfaceView)
             } else{
                 val placeholder = ImageView(itemView.context)

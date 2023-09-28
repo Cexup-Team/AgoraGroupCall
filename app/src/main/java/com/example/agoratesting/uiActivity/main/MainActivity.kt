@@ -34,9 +34,10 @@ import com.example.agoratesting.data.MeetingInfo
 import com.example.agoratesting.uiActivity.VideoAdapter
 import com.example.agoratesting.databinding.ActivityMainBinding
 import com.example.agoratesting.uiActivity.chat.ChatActivity
+import com.example.agoratesting.utils.DataPreference
 import com.example.agoratesting.utils.MediaProjectFgService
 import com.example.agoratesting.utils.SDKManager
-import com.example.agoratesting.utils.TempChatRoom
+import com.example.agoratesting.utils.TempMeeting
 import com.example.agoratesting.utils.VidSDK
 import io.agora.ValueCallBack
 import io.agora.chat.ChatClient
@@ -48,10 +49,12 @@ import io.agora.rtc2.IRtcEngineEventHandler
 import io.agora.rtc2.RtcEngine
 import io.agora.rtc2.ScreenCaptureParameters
 import io.agora.rtc2.UserInfo
+import io.agora.rtc2.video.SegmentationProperty
 import io.agora.rtc2.video.VideoCanvas
 import io.agora.rtc2.video.VideoEncoderConfiguration
 import io.agora.rtc2.video.VideoEncoderConfiguration.FRAME_RATE
 import io.agora.rtc2.video.VideoEncoderConfiguration.ORIENTATION_MODE
+import io.agora.rtc2.video.VirtualBackgroundSource
 import java.util.Timer
 import java.util.TimerTask
 
@@ -62,7 +65,7 @@ class MainActivity : AppCompatActivity() {
     private val REQUESTED_PERMISSION =
         arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.CAMERA)
     private val appId: String = SDKManager.APP_ID
-    private var listMember = mutableListOf<AccountInfo>()
+    private var listMember = TempMeeting.ListMember
     private var uidLocal : Int = 0
     private val uidShareScreen = 1
     private val screenCaptureParameters = ScreenCaptureParameters()
@@ -80,6 +83,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var channelName : String
     private lateinit var username : String
     private lateinit var roomID : String
+    private lateinit var pref : DataPreference
 
     private fun checkSelfPermission(): Boolean {
         if (ContextCompat.checkSelfPermission(
@@ -332,6 +336,7 @@ class MainActivity : AppCompatActivity() {
             fgService = Intent(this, MediaProjectFgService::class.java)
         }
         handler = Handler(Looper.getMainLooper())
+        pref = DataPreference(this)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             meetingDetails = intent.getParcelableExtra("MeetingDetail", MeetingInfo::class.java)!!
@@ -354,6 +359,7 @@ class MainActivity : AppCompatActivity() {
         adapterVideo = VideoAdapter()
 
         initVidSDK()
+        checkPref()
         joinChannel()
         joinChatRoom()
 
@@ -364,7 +370,11 @@ class MainActivity : AppCompatActivity() {
             if (isSharing){
                 binding.videosRecycleView.layoutManager = linearLayoutManager
             } else{
-                binding.videosRecycleView.layoutManager = gridLayoutManager
+                if (listMember.size < 2){
+                    binding.videosRecycleView.layoutManager = linearLayoutManager
+                } else{
+                    binding.videosRecycleView.layoutManager = gridLayoutManager
+                }
             }
         }
 
@@ -376,7 +386,7 @@ class MainActivity : AppCompatActivity() {
 
                         runOnUiThread {
                             checkUnread()
-                            TempChatRoom.add(msg)
+                            TempMeeting.TempChatRoom.add(msg)
                         }
                     }
                 }
@@ -509,6 +519,57 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    override fun onResume() {
+        super.onResume()
+        adapterVideo.notifyDataSetChanged()
+    }
+    private fun checkPref() {
+        //resolution
+        if (pref.getResolution() != null){
+            when (pref.getResolution()){
+                "High" -> rtcEngine?.setRemoteVideoStreamType(0, Constants.VIDEO_STREAM_HIGH)
+                "Low" -> rtcEngine?.setRemoteVideoStreamType(0, Constants.VIDEO_STREAM_LOW)
+            }
+        }
+
+        if (pref.getPrefBG() != null){
+            val segmentationProperty = SegmentationProperty()
+            segmentationProperty.modelType = SegmentationProperty.SEG_MODEL_AI
+            segmentationProperty.greenCapacity = 0.5f
+
+            val bgSource = VirtualBackgroundSource()
+            when (pref.getPrefBG()){
+                "Off" -> {
+                    rtcEngine?.enableVirtualBackground(
+                        false,
+                        bgSource,
+                        segmentationProperty
+                    )
+                }
+                "Blur" -> {
+                    bgSource.backgroundSourceType = VirtualBackgroundSource.BACKGROUND_BLUR
+                    bgSource.blurDegree = VirtualBackgroundSource.BLUR_DEGREE_HIGH
+
+                    rtcEngine?.enableVirtualBackground(
+                        true,
+                        bgSource,
+                        segmentationProperty
+                    )
+                }
+                "Color" -> {
+                    bgSource.backgroundSourceType = VirtualBackgroundSource.BACKGROUND_COLOR
+                    bgSource.color = pref.getColorBG()
+
+                    rtcEngine?.enableVirtualBackground(
+                        true,
+                        bgSource,
+                        segmentationProperty
+                    )
+                }
+            }
+        }
+    }
+
     private fun joinChatRoom() {
         Log.w("CallBack ChatRoom", "Join ChatRoom")
         ChatClient.getInstance().chatroomManager().joinChatRoom(roomID, object : ValueCallBack<ChatRoom> {
@@ -609,7 +670,7 @@ class MainActivity : AppCompatActivity() {
         listMember.clear()
 
         ChatClient.getInstance().chatroomManager().leaveChatRoom(roomID)
-        TempChatRoom.clear()
+        TempMeeting.TempChatRoom.clear()
         Thread {
             RtcEngine.destroy()
         }.start()

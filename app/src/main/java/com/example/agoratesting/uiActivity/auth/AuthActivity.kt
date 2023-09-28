@@ -15,18 +15,12 @@ class AuthActivity : AppCompatActivity() {
 
     private lateinit var username :String
     private lateinit var password :String
-    private lateinit var pref : DataPreference
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         viewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
-        pref = DataPreference(this)
-
-        if (pref.getUser().username.toString().isNotEmpty() && pref.getUser().password.toString().isNotEmpty()){
-            viewModel.login(pref.getUser().username.toString(), pref.getUser().password.toString())
-        }
 
         viewModel.isLoading.observe(this){isLoading ->
             if (isLoading){
