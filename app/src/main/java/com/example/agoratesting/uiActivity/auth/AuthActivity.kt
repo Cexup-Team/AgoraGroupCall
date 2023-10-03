@@ -3,11 +3,14 @@ package com.example.agoratesting.uiActivity.auth
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
+import com.example.agoratesting.R
 import com.example.agoratesting.databinding.ActivityAuthBinding
 import com.example.agoratesting.uiActivity.listmeeting.ListMeetingActivity
-import com.example.agoratesting.utils.DataPreference
+import io.agora.chat.ChatClient
 
 class AuthActivity : AppCompatActivity() {
     private lateinit var binding : ActivityAuthBinding
@@ -25,7 +28,7 @@ class AuthActivity : AppCompatActivity() {
         viewModel.isLoading.observe(this){isLoading ->
             if (isLoading){
                 binding.authPB.isVisible = true
-                binding.joinBtn.isVisible = false
+                binding.loginBtn.isVisible = false
                 binding.tvError.isVisible = false
 
                 binding.TILUsername.isVisible = false
@@ -33,7 +36,7 @@ class AuthActivity : AppCompatActivity() {
             }
             else{
                 binding.authPB.isVisible = false
-                binding.joinBtn.isVisible = true
+                binding.loginBtn.isVisible = true
 
                 binding.TILUsername.isVisible = true
                 binding.TILPassword.isVisible = true
@@ -51,12 +54,11 @@ class AuthActivity : AppCompatActivity() {
         }
 
 
-        binding.joinBtn.setOnClickListener {
+        binding.loginBtn.setOnClickListener {
             username = binding.TIEUsername.text.toString()
             password = binding.TIEPassword.text.toString()
 
             viewModel.login(username, password)
         }
-
     }
 }

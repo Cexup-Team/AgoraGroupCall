@@ -40,6 +40,9 @@ android {
 
 dependencies {
 
+    //Image Picker
+    implementation ("com.github.dhaval2404:imagepicker:2.1")
+
     //datastore
     implementation ("androidx.datastore:datastore-preferences:1.0.0")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")

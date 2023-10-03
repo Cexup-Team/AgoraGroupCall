@@ -21,7 +21,7 @@ class ListMeetingAdapter : ListAdapter<MeetingInfo, ListMeetingAdapter.ViewHolde
 
             itemViewBinding.btnJoinMeeting.setOnClickListener {
                 val intent = Intent(itemView.context, MainActivity::class.java)
-                intent.putExtra("MeetingDetail", meetingInfo)
+                intent.putExtra("MeetingDetail", meetingInfo.roomMeeting)
 
                 itemView.context.startActivity(intent)
             }

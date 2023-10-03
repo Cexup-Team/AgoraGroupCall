@@ -2,24 +2,31 @@ package com.example.agoratesting.uiActivity.main
 
 import android.app.AlertDialog
 import android.content.DialogInterface
+import android.content.Intent
+import android.content.Intent.ACTION_GET_CONTENT
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.SurfaceView
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.example.agoratesting.databinding.ActivitySettingBinding
 import com.example.agoratesting.utils.DataPreference
 import com.example.agoratesting.utils.TempMeeting
 import com.example.agoratesting.utils.VidSDK
+import com.github.dhaval2404.imagepicker.ImagePicker
 import io.agora.rtc2.Constants
 import io.agora.rtc2.video.SegmentationProperty
-import io.agora.rtc2.video.VideoCanvas
 import io.agora.rtc2.video.VirtualBackgroundSource
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 
 class SettingActivity : AppCompatActivity(){
     private lateinit var binding: ActivitySettingBinding
@@ -31,9 +38,23 @@ class SettingActivity : AppCompatActivity(){
     private var segmentationProperty = SegmentationProperty()
     private var bgColorDefault = 0x000000
     private val resOption = arrayOf("High", "Low")
+//    private val bgOption = arrayOf("Off", "Blur", "Color", "Image")
     private val bgOption = arrayOf("Off", "Blur", "Color")
     private val colorOption = arrayOf("Black", "White", "Red", "Green", "Blue", "Yellow", "Cyan", "Magenta")
 
+    private  var selectedImg : String ? = null
+
+    private val launcherIntentGallery = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val data = result.data!!
+            selectedImg = data.data!!.path
+            Log.e("selectedImgURI", selectedImg.toString())
+            setVirtualBackGround()
+            return@registerForActivityResult
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,11 +121,13 @@ class SettingActivity : AppCompatActivity(){
                 when (bgOption[position]){
                     "Off" -> {
                         binding.backgroundColorSetting.isVisible = false
+                        binding.backgroundImgSetting.isVisible = false
                         binding.localPreview.isVisible = false
                         isEnabled = false
                     }
                     "Blur" -> {
                         binding.backgroundColorSetting.isVisible = false
+                        binding.backgroundImgSetting.isVisible = false
                         binding.localPreview.isVisible = true
                         isEnabled = true
                         bgSource.backgroundSourceType = VirtualBackgroundSource.BACKGROUND_BLUR
@@ -112,10 +135,21 @@ class SettingActivity : AppCompatActivity(){
                     }
                     "Color" -> {
                         binding.backgroundColorSetting.isVisible = true
+                        binding.backgroundImgSetting.isVisible = false
                         binding.localPreview.isVisible = true
                         isEnabled = true
                         bgSource.backgroundSourceType = VirtualBackgroundSource.BACKGROUND_COLOR
                         bgSource.color = bgColorDefault
+                    }
+
+                    "Image" ->{
+                        binding.backgroundImgSetting.isVisible = true
+                        binding.backgroundColorSetting.isVisible = false
+                        binding.localPreview.isVisible = true
+                        isEnabled = true
+                        bgSource.backgroundSourceType = VirtualBackgroundSource.BACKGROUND_IMG
+                        bgSource.source = selectedImg
+                        Log.e("selectedImgURI", selectedImg.toString())
                     }
                 }
 
@@ -156,6 +190,17 @@ class SettingActivity : AppCompatActivity(){
                 }
                 .create()
                 .show()
+        }
+
+        binding.btnPickImg.setOnClickListener {
+            ImagePicker.with(this).crop().compress(1024).maxResultSize(1080, 1080).createIntent {
+                launcherIntentGallery.launch(it)
+            }
+//            val intent = Intent()
+//            intent.action = ACTION_GET_CONTENT
+//            intent.type = "image/*"
+//            val chooser = Intent.createChooser(intent, "Choose a Picture")
+//            launcherIntentGallery.launch(chooser)
         }
     }
 

@@ -31,34 +31,35 @@ class ChatActivity : AppCompatActivity(){
         roomID = intent.getStringExtra("ROOM_ID")!!
         loadPrevMessage()
         initListener()
+        seticon()
 
         binding.btnVidcamChat.setOnClickListener {
-            if (it.tag == "ic_videocam"){
+            if (!TempMeeting.isCameraOff){
                 binding.btnVidcamChat.setImageResource(R.drawable.ic_videocam_off)
-                binding.btnVidcamChat.tag = "ic_videocam_off"
 
                 rtcEngine?.muteLocalVideoStream(true)
-            } else if (it.tag == "ic_videocam_off"){
+                TempMeeting.isCameraOff = true
+            } else{
 
                 binding.btnVidcamChat.setImageResource(R.drawable.ic_videocam)
-                binding.btnVidcamChat.tag = "ic_videocam"
 
                 rtcEngine?.muteLocalVideoStream(false)
+                TempMeeting.isCameraOff = false
             }
         }
 
         binding.btnMicChat.setOnClickListener {
-            if (it.tag == "ic_mic"){
+            if (!TempMeeting.isMicOff){
                 binding.btnMicChat.setImageResource(R.drawable.ic_mic_off)
-                binding.btnMicChat.tag = "ic_mic_off"
 
                 rtcEngine?.muteLocalAudioStream(true)
-            } else if (it.tag == "ic_mic_off"){
+                TempMeeting.isMicOff = true
+            } else{
 
                 binding.btnMicChat.setImageResource(R.drawable.ic_mic)
-                binding.btnMicChat.tag = "ic_mic"
 
                 rtcEngine?.muteLocalAudioStream(false)
+                TempMeeting.isMicOff = false
             }
         }
 
@@ -88,6 +89,39 @@ class ChatActivity : AppCompatActivity(){
 
                 })
                 ChatClient.getInstance().chatManager().sendMessage(message)
+            }
+        }
+    }
+
+    private fun seticon() {
+
+        when(TempMeeting.isMicOff){
+            true -> {
+                binding.btnMicChat.setImageResource(R.drawable.ic_mic_off)
+
+                rtcEngine?.muteLocalAudioStream(true)
+            }
+            false -> {
+                binding.btnMicChat.setImageResource(R.drawable.ic_mic)
+
+                rtcEngine?.muteLocalAudioStream(false)
+            }
+        }
+
+        when(TempMeeting.isCameraOff){
+            true -> {
+                binding.btnVidcamChat.setImageResource(R.drawable.ic_videocam_off)
+
+                rtcEngine?.muteLocalVideoStream(true)
+                rtcEngine?.stopPreview()
+                TempMeeting.ListMember[0].offCam = true
+            }
+            false -> {
+                binding.btnVidcamChat.setImageResource(R.drawable.ic_videocam)
+
+                rtcEngine?.muteLocalVideoStream(false)
+                rtcEngine?.startPreview()
+                TempMeeting.ListMember[0].offCam = false
             }
         }
     }

@@ -31,6 +31,7 @@ import com.example.agoratesting.MainApplication
 import com.example.agoratesting.R
 import com.example.agoratesting.data.AccountInfo
 import com.example.agoratesting.data.MeetingInfo
+import com.example.agoratesting.data.MeetingRoom
 import com.example.agoratesting.uiActivity.VideoAdapter
 import com.example.agoratesting.databinding.ActivityMainBinding
 import com.example.agoratesting.uiActivity.chat.ChatActivity
@@ -72,7 +73,7 @@ class MainActivity : AppCompatActivity() {
     private var isShareScreen : Boolean = false
     private var rtcEngine: RtcEngine? = null
 
-    private lateinit var meetingDetails : MeetingInfo
+    private lateinit var meetingDetails : MeetingRoom
     private lateinit var handler: Handler
     private lateinit var adapterVideo: VideoAdapter
     private lateinit var fgService: Intent
@@ -339,15 +340,15 @@ class MainActivity : AppCompatActivity() {
         pref = DataPreference(this)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            meetingDetails = intent.getParcelableExtra("MeetingDetail", MeetingInfo::class.java)!!
+            meetingDetails = intent.getParcelableExtra("MeetingDetail", MeetingRoom::class.java)!!
         } else{
             @Suppress("DEPRECATION")
             meetingDetails = intent.getParcelableExtra("MeetingDetail")!!
         }
 
-        token = meetingDetails.roomMeeting?.rtcToken ?: ""
-        channelName = meetingDetails.roomMeeting?.channelName ?: ""
-        roomID = meetingDetails.roomMeeting?.roomID ?: ""
+        token = meetingDetails.rtcToken ?: ""
+        channelName = meetingDetails.channelName ?: ""
+        roomID = meetingDetails.roomID ?: ""
         username = ChatClient.getInstance().currentUser
 
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
@@ -362,6 +363,7 @@ class MainActivity : AppCompatActivity() {
         checkPref()
         joinChannel()
         joinChatRoom()
+        setIcon()
 
         binding.videosRecycleView.adapter = adapterVideo
 
@@ -394,39 +396,40 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnVolume.setOnClickListener {
-            if (it.tag == "ic_volume"){
+            if (!TempMeeting.isVolumeOff){
 
                 rtcEngine?.muteAllRemoteAudioStreams(true)
 
                 binding.btnVolume.setImageResource(R.drawable.ic_volume_off)
-                binding.btnVolume.tag = "ic_volume_off"
 
-            } else if (it.tag == "ic_volume_off"){
+                TempMeeting.isVolumeOff = true
+            } else{
 
                 rtcEngine?.muteAllRemoteAudioStreams(false)
 
                 binding.btnVolume.setImageResource(R.drawable.ic_volume)
-                binding.btnVolume.tag = "ic_volume"
+
+                TempMeeting.isVolumeOff = false
             }
         }
 
         binding.btnVidcam.setOnClickListener {
-            if (it.tag == "ic_videocam"){
+            if (!TempMeeting.isCameraOff){
                 rtcEngine?.muteLocalVideoStream(true)
                 rtcEngine?.stopPreview()
 
                 binding.btnVidcam.setImageResource(R.drawable.ic_videocam_off)
-                binding.btnVidcam.tag = "ic_videocam_off"
+                TempMeeting.isCameraOff = true
 
                 listMember[0].offCam = true
                 adapterVideo.notifyDataSetChanged()
-            } else if (it.tag == "ic_videocam_off"){
+            } else{
 
                 rtcEngine?.muteLocalVideoStream(false)
                 rtcEngine?.startPreview()
 
                 binding.btnVidcam.setImageResource(R.drawable.ic_videocam)
-                binding.btnVidcam.tag = "ic_videocam"
+                TempMeeting.isCameraOff = false
 
                 listMember[0].offCam = false
                 adapterVideo.notifyDataSetChanged()
@@ -434,19 +437,20 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnMic.setOnClickListener {
-            if (it.tag == "ic_mic"){
+            if (!TempMeeting.isMicOff){
 
                 rtcEngine?.muteLocalAudioStream(true)
 
                 binding.btnMic.setImageResource(R.drawable.ic_mic_off)
-                binding.btnMic.tag = "ic_mic_off"
 
-            } else if (it.tag == "ic_mic_off"){
+                TempMeeting.isMicOff = true
+            } else{
 
                 rtcEngine?.muteLocalAudioStream(false)
 
                 binding.btnMic.setImageResource(R.drawable.ic_mic)
-                binding.btnMic.tag = "ic_mic"
+
+                TempMeeting.isMicOff = false
             }
         }
 
@@ -519,8 +523,44 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private fun setIcon() {
+        when(TempMeeting.isVolumeOff){
+            true -> binding.btnVolume.setImageResource(R.drawable.ic_volume_off)
+            false -> binding.btnVolume.setImageResource(R.drawable.ic_volume)
+        }
+
+        when(TempMeeting.isMicOff){
+            true -> {
+                binding.btnMic.setImageResource(R.drawable.ic_mic_off)
+
+                rtcEngine?.muteLocalAudioStream(true)
+            }
+            false -> {
+                binding.btnMic.setImageResource(R.drawable.ic_mic)
+
+                rtcEngine?.muteLocalAudioStream(false)
+            }
+        }
+
+        when(TempMeeting.isCameraOff){
+            true -> {
+                rtcEngine?.muteLocalVideoStream(true)
+                rtcEngine?.stopPreview()
+
+                binding.btnVidcam.setImageResource(R.drawable.ic_videocam_off)
+            }
+            false -> {
+                rtcEngine?.muteLocalVideoStream(false)
+                rtcEngine?.startPreview()
+
+                binding.btnVidcam.setImageResource(R.drawable.ic_videocam)
+            }
+        }
+    }
+
     override fun onResume() {
         super.onResume()
+        setIcon()
         adapterVideo.notifyDataSetChanged()
     }
     private fun checkPref() {
