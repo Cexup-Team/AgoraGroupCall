@@ -2,10 +2,7 @@ package com.example.agoratesting.uiActivity.main
 
 import android.app.AlertDialog
 import android.content.DialogInterface
-import android.content.Intent
-import android.content.Intent.ACTION_GET_CONTENT
 import android.graphics.Color
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -14,7 +11,7 @@ import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.example.agoratesting.databinding.ActivitySettingBinding
 import com.example.agoratesting.utils.DataPreference
@@ -24,9 +21,6 @@ import com.github.dhaval2404.imagepicker.ImagePicker
 import io.agora.rtc2.Constants
 import io.agora.rtc2.video.SegmentationProperty
 import io.agora.rtc2.video.VirtualBackgroundSource
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 
 class SettingActivity : AppCompatActivity(){
     private lateinit var binding: ActivitySettingBinding
@@ -102,7 +96,7 @@ class SettingActivity : AppCompatActivity(){
                     "Low" -> rtcEngine?.setRemoteVideoStreamType(0, Constants.VIDEO_STREAM_LOW)
                 }
 
-                pref.saveResolution(resOption.get(position))
+                pref.saveResolution(resOption[position])
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -153,7 +147,7 @@ class SettingActivity : AppCompatActivity(){
                     }
                 }
 
-                pref.savePrefBG(bgOption.get(position))
+                pref.savePrefBG(bgOption[position])
                 setVirtualBackGround()
                 setLocalPreview()
             }

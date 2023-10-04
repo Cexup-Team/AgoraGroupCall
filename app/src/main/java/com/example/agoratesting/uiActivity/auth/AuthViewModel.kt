@@ -38,7 +38,7 @@ class AuthViewModel :ViewModel() {
                 }
 
                 override fun onError(code: Int, error: String?) {
-                    Log.w("CallBack Login", "${code} : ${error.toString()}")
+                    Log.w("CallBack Login", "$code : ${error.toString()}")
                     errorMSG = error.toString()
                     _isLoading.postValue(false)
                     _loggedIn.postValue(false)

@@ -30,10 +30,9 @@ import androidx.recyclerview.widget.RecyclerView.LayoutParams
 import com.example.agoratesting.MainApplication
 import com.example.agoratesting.R
 import com.example.agoratesting.data.AccountInfo
-import com.example.agoratesting.data.MeetingInfo
 import com.example.agoratesting.data.MeetingRoom
-import com.example.agoratesting.uiActivity.VideoAdapter
 import com.example.agoratesting.databinding.ActivityMainBinding
+import com.example.agoratesting.uiActivity.VideoAdapter
 import com.example.agoratesting.uiActivity.chat.ChatActivity
 import com.example.agoratesting.utils.DataPreference
 import com.example.agoratesting.utils.MediaProjectFgService
@@ -351,7 +350,7 @@ class MainActivity : AppCompatActivity() {
         roomID = meetingDetails.roomID ?: ""
         username = ChatClient.getInstance().currentUser
 
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
         gridLayoutManager = GridLayoutManager(this, 2, LinearLayoutManager.HORIZONTAL, false)
         linearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -618,7 +617,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onError(error: Int, errorMsg: String?) {
-                Log.w("CallBack ChatRoom", "${error} : ${errorMsg.toString()}")
+                Log.w("CallBack ChatRoom", "$error : ${errorMsg.toString()}")
                 Log.w("CallBack ChatRoom", "Retry Join ChatRoom")
                 joinChatRoom()
             }

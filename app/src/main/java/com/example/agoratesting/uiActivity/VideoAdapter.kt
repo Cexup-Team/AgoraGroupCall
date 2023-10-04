@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.agoratesting.data.AccountInfo
 import com.example.agoratesting.databinding.ItemVideoBinding
-import kotlin.math.acos
 
 class VideoAdapter: ListAdapter<AccountInfo, VideoAdapter.ViewHolder>(VideoDiffCallBack) {
 

@@ -1,16 +1,12 @@
 package com.example.agoratesting.uiActivity.auth
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.EditText
-import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
-import com.example.agoratesting.R
 import com.example.agoratesting.databinding.ActivityAuthBinding
 import com.example.agoratesting.uiActivity.listmeeting.ListMeetingActivity
-import io.agora.chat.ChatClient
 
 class AuthActivity : AppCompatActivity() {
     private lateinit var binding : ActivityAuthBinding
@@ -23,7 +19,7 @@ class AuthActivity : AppCompatActivity() {
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        viewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
+        viewModel = ViewModelProvider(this)[AuthViewModel::class.java]
 
         viewModel.isLoading.observe(this){isLoading ->
             if (isLoading){

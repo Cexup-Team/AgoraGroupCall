@@ -34,5 +34,4 @@ object TempMeeting{
 
     var isMicOff = false
 
-    var isAudioMode = false
 }

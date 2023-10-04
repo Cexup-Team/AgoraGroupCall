@@ -1,12 +1,11 @@
 package com.example.agoratesting.uiActivity.listmeeting
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,6 +15,7 @@ import com.example.agoratesting.databinding.ActivityListMeetingBinding
 import com.example.agoratesting.uiActivity.main.MainActivity
 import com.example.agoratesting.utils.dummyMeetingList
 import io.agora.chat.ChatClient
+import kotlin.system.exitProcess
 
 class ListMeetingActivity : AppCompatActivity() {
     private lateinit var binding: ActivityListMeetingBinding
@@ -84,7 +84,7 @@ class ListMeetingActivity : AppCompatActivity() {
                 }
                 .setPositiveButton("Yes"){dialog, which ->
                     finishAffinity()
-                    System.exit(0)
+                    exitProcess(0)
                 }
                 .create()
                 .show()

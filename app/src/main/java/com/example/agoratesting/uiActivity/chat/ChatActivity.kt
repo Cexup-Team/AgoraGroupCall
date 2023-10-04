@@ -84,7 +84,7 @@ class ChatActivity : AppCompatActivity(){
                     }
 
                     override fun onError(code: Int, error: String?) {
-                        Log.e("Send CallBack", "${code} : ${error.toString()}")
+                        Log.e("Send CallBack", "$code : ${error.toString()}")
                     }
 
                 })

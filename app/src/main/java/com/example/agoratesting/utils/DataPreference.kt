@@ -1,7 +1,6 @@
 package com.example.agoratesting.utils
 
 import android.content.Context
-import com.example.agoratesting.data.User
 
 internal class DataPreference(context: Context){
 
