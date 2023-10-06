@@ -13,3 +13,9 @@
 .externalNativeBuild
 .cxx
 local.properties
+/encryption_public_key.pem
+/keystore.jks
+/pepk.jar
+/private_key.pepk
+/output.zip
+/upload_certificate.pem

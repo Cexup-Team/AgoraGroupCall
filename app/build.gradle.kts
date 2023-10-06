@@ -5,15 +5,15 @@ plugins {
 }
 
 android {
-    namespace = "com.example.agoratesting"
+    namespace = "com.cexup.meet"
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.example.agoratesting"
+        applicationId = "com.cexup.meet"
         minSdk = 24
         targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "0.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -24,16 +24,16 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled   = false
+            isMinifyEnabled   = true
             proguardFiles (getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_11.toString()
     }
 }
 
