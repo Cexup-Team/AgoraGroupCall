@@ -45,13 +45,4 @@ class MainApplication : Application() {
         return globalSettings
     }
 
-    private fun parseMessage(it:String): String {
-        val splitMessage = it.split("")
-        var contentMessage = ""
-        for(i in 6 .. (splitMessage.size - 3)){
-            contentMessage += splitMessage[i]
-        }
-
-        return contentMessage
-    }
 }

@@ -1,48 +1,37 @@
 package com.example.agoratesting.uiActivity.auth
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
+import com.example.agoratesting.R
+import com.example.agoratesting.data.MeetingRoom
 import com.example.agoratesting.databinding.ActivityAuthBinding
 import com.example.agoratesting.uiActivity.listmeeting.ListMeetingActivity
-import com.example.agoratesting.utils.DataPreference
+import com.example.agoratesting.uiActivity.main.MainActivity
 
 class AuthActivity : AppCompatActivity() {
     private lateinit var binding : ActivityAuthBinding
     private lateinit var viewModel: AuthViewModel
-
-    private lateinit var username :String
-    private lateinit var password :String
-    private lateinit var pref : DataPreference
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        viewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
-        pref = DataPreference(this)
-
-        if (pref.getUser().username.toString().isNotEmpty() && pref.getUser().password.toString().isNotEmpty()){
-            viewModel.login(pref.getUser().username.toString(), pref.getUser().password.toString())
-        }
+        viewModel = ViewModelProvider(this)[AuthViewModel::class.java]
 
         viewModel.isLoading.observe(this){isLoading ->
             if (isLoading){
                 binding.authPB.isVisible = true
-                binding.joinBtn.isVisible = false
+                binding.loginBtn.isVisible = false
                 binding.tvError.isVisible = false
-
-                binding.TILUsername.isVisible = false
-                binding.TILPassword.isVisible = false
             }
             else{
                 binding.authPB.isVisible = false
-                binding.joinBtn.isVisible = true
-
-                binding.TILUsername.isVisible = true
-                binding.TILPassword.isVisible = true
+                binding.loginBtn.isVisible = true
                 if (viewModel.errorMSG.isNotEmpty()){
                     binding.tvError.isVisible = true
                     binding.tvError.text = viewModel.errorMSG
@@ -56,13 +45,43 @@ class AuthActivity : AppCompatActivity() {
             }
         }
 
-
-        binding.joinBtn.setOnClickListener {
-            username = binding.TIEUsername.text.toString()
-            password = binding.TIEPassword.text.toString()
-
-            viewModel.login(username, password)
+        binding.loginBtn.setOnClickListener {
+            val dialogLogin = layoutInflater.inflate(R.layout.dialog_login, null)
+            AlertDialog.Builder(this)
+                .setTitle("Login Account")
+                .setView(dialogLogin)
+                .setNegativeButton("Cancel"){dialog, which ->
+                    dialog.cancel()
+                }
+                .setPositiveButton("Login"){dialog, which ->
+                    val username = dialogLogin.findViewById<EditText>(R.id.login_username).text.toString()
+                    val password = dialogLogin.findViewById<EditText>(R.id.login_password).text.toString()
+                    viewModel.login(username, password)
+                }
+                .create()
+                .show()
         }
 
+        binding.guestBtn.setOnClickListener{
+            val dialogGuest = layoutInflater.inflate(R.layout.dialog_guest, null)
+            AlertDialog.Builder(this)
+                .setTitle("Guest Account")
+                .setView(dialogGuest)
+                .setNegativeButton("Cancel"){dialog, which ->
+                    dialog.cancel()
+                }
+                .setPositiveButton("Join Meeting"){dialog, which ->
+                    val channelName = dialogGuest.findViewById<EditText>(R.id.guest_channel).text.toString()
+                    val rtcToken = dialogGuest.findViewById<EditText>(R.id.guest_token).text.toString()
+
+                    val meetingRoom = MeetingRoom(rtcToken, channelName, "")
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.putExtra("MeetingDetail", meetingRoom)
+
+                    startActivity(intent)
+                }
+                .create()
+                .show()
+        }
     }
 }

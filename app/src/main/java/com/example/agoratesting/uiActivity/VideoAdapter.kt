@@ -17,6 +17,9 @@ class VideoAdapter: ListAdapter<AccountInfo, VideoAdapter.ViewHolder>(VideoDiffC
     class ViewHolder(val itemViewBinding: ItemVideoBinding) : RecyclerView.ViewHolder(itemViewBinding.root){
         fun onBind(account : AccountInfo){
             if (!account.offCam){
+                if (account.surfaceView.parent != null){
+                    (account.surfaceView.parent as ViewGroup).removeView(account.surfaceView)
+                }
                 itemViewBinding.videoFrame.addView(account.surfaceView)
             } else{
                 val placeholder = ImageView(itemView.context)

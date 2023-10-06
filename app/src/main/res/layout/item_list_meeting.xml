@@ -7,6 +7,7 @@
     android:paddingVertical="10dp"
     android:orientation="vertical"
     android:gravity="center"
+    android:background="@drawable/background_rounded_corner"
     android:layout_width="match_parent"
     android:layout_height="150dp">
 
@@ -39,6 +40,7 @@
             android:id="@+id/btn_personal_chat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:backgroundTint="#0D7F96"
             android:text="Chat"
             android:layout_weight="1"/>
 
@@ -51,6 +53,7 @@
             android:id="@+id/btn_join_meeting"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:backgroundTint="#0D7F96"
             android:text="Join Meeting"
             android:layout_weight="1"/>
     </LinearLayout>

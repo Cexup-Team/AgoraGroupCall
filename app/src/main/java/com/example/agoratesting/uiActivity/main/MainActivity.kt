@@ -30,13 +30,14 @@ import androidx.recyclerview.widget.RecyclerView.LayoutParams
 import com.example.agoratesting.MainApplication
 import com.example.agoratesting.R
 import com.example.agoratesting.data.AccountInfo
-import com.example.agoratesting.data.MeetingInfo
-import com.example.agoratesting.uiActivity.VideoAdapter
+import com.example.agoratesting.data.MeetingRoom
 import com.example.agoratesting.databinding.ActivityMainBinding
+import com.example.agoratesting.uiActivity.VideoAdapter
 import com.example.agoratesting.uiActivity.chat.ChatActivity
+import com.example.agoratesting.utils.DataPreference
 import com.example.agoratesting.utils.MediaProjectFgService
 import com.example.agoratesting.utils.SDKManager
-import com.example.agoratesting.utils.TempChatRoom
+import com.example.agoratesting.utils.TempMeeting
 import com.example.agoratesting.utils.VidSDK
 import io.agora.ValueCallBack
 import io.agora.chat.ChatClient
@@ -48,10 +49,12 @@ import io.agora.rtc2.IRtcEngineEventHandler
 import io.agora.rtc2.RtcEngine
 import io.agora.rtc2.ScreenCaptureParameters
 import io.agora.rtc2.UserInfo
+import io.agora.rtc2.video.SegmentationProperty
 import io.agora.rtc2.video.VideoCanvas
 import io.agora.rtc2.video.VideoEncoderConfiguration
 import io.agora.rtc2.video.VideoEncoderConfiguration.FRAME_RATE
 import io.agora.rtc2.video.VideoEncoderConfiguration.ORIENTATION_MODE
+import io.agora.rtc2.video.VirtualBackgroundSource
 import java.util.Timer
 import java.util.TimerTask
 
@@ -62,14 +65,14 @@ class MainActivity : AppCompatActivity() {
     private val REQUESTED_PERMISSION =
         arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.CAMERA)
     private val appId: String = SDKManager.APP_ID
-    private var listMember = mutableListOf<AccountInfo>()
+    private var listMember = TempMeeting.ListMember
     private var uidLocal : Int = 0
     private val uidShareScreen = 1
     private val screenCaptureParameters = ScreenCaptureParameters()
     private var isShareScreen : Boolean = false
     private var rtcEngine: RtcEngine? = null
 
-    private lateinit var meetingDetails : MeetingInfo
+    private lateinit var meetingDetails : MeetingRoom
     private lateinit var handler: Handler
     private lateinit var adapterVideo: VideoAdapter
     private lateinit var fgService: Intent
@@ -80,6 +83,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var channelName : String
     private lateinit var username : String
     private lateinit var roomID : String
+    private lateinit var pref : DataPreference
 
     private fun checkSelfPermission(): Boolean {
         if (ContextCompat.checkSelfPermission(
@@ -306,7 +310,12 @@ class MainActivity : AppCompatActivity() {
             options.channelProfile = Constants.CHANNEL_PROFILE_COMMUNICATION
             options.clientRoleType = Constants.CLIENT_ROLE_BROADCASTER
             rtcEngine?.startPreview()
-            rtcEngine?.joinChannelWithUserAccount(token ,channelName, username, options)
+
+            if (username.isNullOrBlank()){
+                rtcEngine?.joinChannel(token, channelName, uidLocal, options)
+            } else{
+                rtcEngine?.joinChannelWithUserAccount(token ,channelName, username, options)
+            }
         } else {
             Toast.makeText(applicationContext, "Permission was not granted", Toast.LENGTH_SHORT)
                 .show()
@@ -332,20 +341,26 @@ class MainActivity : AppCompatActivity() {
             fgService = Intent(this, MediaProjectFgService::class.java)
         }
         handler = Handler(Looper.getMainLooper())
+        pref = DataPreference(this)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            meetingDetails = intent.getParcelableExtra("MeetingDetail", MeetingInfo::class.java)!!
+            meetingDetails = intent.getParcelableExtra("MeetingDetail", MeetingRoom::class.java)!!
         } else{
             @Suppress("DEPRECATION")
             meetingDetails = intent.getParcelableExtra("MeetingDetail")!!
         }
 
-        token = meetingDetails.roomMeeting?.rtcToken ?: ""
-        channelName = meetingDetails.roomMeeting?.channelName ?: ""
-        roomID = meetingDetails.roomMeeting?.roomID ?: ""
+        if (meetingDetails.roomID.isNullOrBlank()){
+            binding.layoutChat.isVisible = false
+        }
+
+        token = meetingDetails.rtcToken ?: ""
+        channelName = meetingDetails.channelName ?: ""
+        roomID = meetingDetails.roomID ?: ""
         username = ChatClient.getInstance().currentUser
 
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
         gridLayoutManager = GridLayoutManager(this, 2, LinearLayoutManager.HORIZONTAL, false)
         linearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -354,8 +369,10 @@ class MainActivity : AppCompatActivity() {
         adapterVideo = VideoAdapter()
 
         initVidSDK()
+        checkPref()
         joinChannel()
         joinChatRoom()
+        setIcon()
 
         binding.videosRecycleView.adapter = adapterVideo
 
@@ -364,7 +381,11 @@ class MainActivity : AppCompatActivity() {
             if (isSharing){
                 binding.videosRecycleView.layoutManager = linearLayoutManager
             } else{
-                binding.videosRecycleView.layoutManager = gridLayoutManager
+                if (listMember.size < 2){
+                    binding.videosRecycleView.layoutManager = linearLayoutManager
+                } else{
+                    binding.videosRecycleView.layoutManager = gridLayoutManager
+                }
             }
         }
 
@@ -376,7 +397,7 @@ class MainActivity : AppCompatActivity() {
 
                         runOnUiThread {
                             checkUnread()
-                            TempChatRoom.add(msg)
+                            TempMeeting.TempChatRoom.add(msg)
                         }
                     }
                 }
@@ -384,39 +405,40 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnVolume.setOnClickListener {
-            if (it.tag == "ic_volume"){
+            if (!TempMeeting.isVolumeOff){
 
                 rtcEngine?.muteAllRemoteAudioStreams(true)
 
                 binding.btnVolume.setImageResource(R.drawable.ic_volume_off)
-                binding.btnVolume.tag = "ic_volume_off"
 
-            } else if (it.tag == "ic_volume_off"){
+                TempMeeting.isVolumeOff = true
+            } else{
 
                 rtcEngine?.muteAllRemoteAudioStreams(false)
 
                 binding.btnVolume.setImageResource(R.drawable.ic_volume)
-                binding.btnVolume.tag = "ic_volume"
+
+                TempMeeting.isVolumeOff = false
             }
         }
 
         binding.btnVidcam.setOnClickListener {
-            if (it.tag == "ic_videocam"){
+            if (!TempMeeting.isCameraOff){
                 rtcEngine?.muteLocalVideoStream(true)
                 rtcEngine?.stopPreview()
 
                 binding.btnVidcam.setImageResource(R.drawable.ic_videocam_off)
-                binding.btnVidcam.tag = "ic_videocam_off"
+                TempMeeting.isCameraOff = true
 
                 listMember[0].offCam = true
                 adapterVideo.notifyDataSetChanged()
-            } else if (it.tag == "ic_videocam_off"){
+            } else{
 
                 rtcEngine?.muteLocalVideoStream(false)
                 rtcEngine?.startPreview()
 
                 binding.btnVidcam.setImageResource(R.drawable.ic_videocam)
-                binding.btnVidcam.tag = "ic_videocam"
+                TempMeeting.isCameraOff = false
 
                 listMember[0].offCam = false
                 adapterVideo.notifyDataSetChanged()
@@ -424,19 +446,20 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnMic.setOnClickListener {
-            if (it.tag == "ic_mic"){
+            if (!TempMeeting.isMicOff){
 
                 rtcEngine?.muteLocalAudioStream(true)
 
                 binding.btnMic.setImageResource(R.drawable.ic_mic_off)
-                binding.btnMic.tag = "ic_mic_off"
 
-            } else if (it.tag == "ic_mic_off"){
+                TempMeeting.isMicOff = true
+            } else{
 
                 rtcEngine?.muteLocalAudioStream(false)
 
                 binding.btnMic.setImageResource(R.drawable.ic_mic)
-                binding.btnMic.tag = "ic_mic"
+
+                TempMeeting.isMicOff = false
             }
         }
 
@@ -509,6 +532,93 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private fun setIcon() {
+        when(TempMeeting.isVolumeOff){
+            true -> binding.btnVolume.setImageResource(R.drawable.ic_volume_off)
+            false -> binding.btnVolume.setImageResource(R.drawable.ic_volume)
+        }
+
+        when(TempMeeting.isMicOff){
+            true -> {
+                binding.btnMic.setImageResource(R.drawable.ic_mic_off)
+
+                rtcEngine?.muteLocalAudioStream(true)
+            }
+            false -> {
+                binding.btnMic.setImageResource(R.drawable.ic_mic)
+
+                rtcEngine?.muteLocalAudioStream(false)
+            }
+        }
+
+        when(TempMeeting.isCameraOff){
+            true -> {
+                rtcEngine?.muteLocalVideoStream(true)
+                rtcEngine?.stopPreview()
+
+                binding.btnVidcam.setImageResource(R.drawable.ic_videocam_off)
+            }
+            false -> {
+                rtcEngine?.muteLocalVideoStream(false)
+                rtcEngine?.startPreview()
+
+                binding.btnVidcam.setImageResource(R.drawable.ic_videocam)
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        setIcon()
+        adapterVideo.notifyDataSetChanged()
+    }
+    private fun checkPref() {
+        //resolution
+        if (pref.getResolution() != null){
+            when (pref.getResolution()){
+                "High" -> rtcEngine?.setRemoteVideoStreamType(0, Constants.VIDEO_STREAM_HIGH)
+                "Low" -> rtcEngine?.setRemoteVideoStreamType(0, Constants.VIDEO_STREAM_LOW)
+            }
+        }
+
+        if (pref.getPrefBG() != null){
+            val segmentationProperty = SegmentationProperty()
+            segmentationProperty.modelType = SegmentationProperty.SEG_MODEL_AI
+            segmentationProperty.greenCapacity = 0.5f
+
+            val bgSource = VirtualBackgroundSource()
+            when (pref.getPrefBG()){
+                "Off" -> {
+                    rtcEngine?.enableVirtualBackground(
+                        false,
+                        bgSource,
+                        segmentationProperty
+                    )
+                }
+                "Blur" -> {
+                    bgSource.backgroundSourceType = VirtualBackgroundSource.BACKGROUND_BLUR
+                    bgSource.blurDegree = VirtualBackgroundSource.BLUR_DEGREE_HIGH
+
+                    rtcEngine?.enableVirtualBackground(
+                        true,
+                        bgSource,
+                        segmentationProperty
+                    )
+                }
+                "Color" -> {
+                    bgSource.backgroundSourceType = VirtualBackgroundSource.BACKGROUND_COLOR
+                    bgSource.color = pref.getColorBG()
+
+                    rtcEngine?.enableVirtualBackground(
+                        true,
+                        bgSource,
+                        segmentationProperty
+                    )
+                }
+            }
+        }
+    }
+
     private fun joinChatRoom() {
         Log.w("CallBack ChatRoom", "Join ChatRoom")
         ChatClient.getInstance().chatroomManager().joinChatRoom(roomID, object : ValueCallBack<ChatRoom> {
@@ -517,7 +627,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onError(error: Int, errorMsg: String?) {
-                Log.w("CallBack ChatRoom", "${error} : ${errorMsg.toString()}")
+                Log.w("CallBack ChatRoom", "$error : ${errorMsg.toString()}")
                 Log.w("CallBack ChatRoom", "Retry Join ChatRoom")
                 joinChatRoom()
             }
@@ -609,7 +719,7 @@ class MainActivity : AppCompatActivity() {
         listMember.clear()
 
         ChatClient.getInstance().chatroomManager().leaveChatRoom(roomID)
-        TempChatRoom.clear()
+        TempMeeting.TempChatRoom.clear()
         Thread {
             RtcEngine.destroy()
         }.start()
