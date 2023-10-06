@@ -310,7 +310,12 @@ class MainActivity : AppCompatActivity() {
             options.channelProfile = Constants.CHANNEL_PROFILE_COMMUNICATION
             options.clientRoleType = Constants.CLIENT_ROLE_BROADCASTER
             rtcEngine?.startPreview()
-            rtcEngine?.joinChannelWithUserAccount(token ,channelName, username, options)
+
+            if (username.isNullOrBlank()){
+                rtcEngine?.joinChannel(token, channelName, uidLocal, options)
+            } else{
+                rtcEngine?.joinChannelWithUserAccount(token ,channelName, username, options)
+            }
         } else {
             Toast.makeText(applicationContext, "Permission was not granted", Toast.LENGTH_SHORT)
                 .show()
@@ -345,10 +350,15 @@ class MainActivity : AppCompatActivity() {
             meetingDetails = intent.getParcelableExtra("MeetingDetail")!!
         }
 
+        if (meetingDetails.roomID.isNullOrBlank()){
+            binding.layoutChat.isVisible = false
+        }
+
         token = meetingDetails.rtcToken ?: ""
         channelName = meetingDetails.channelName ?: ""
         roomID = meetingDetails.roomID ?: ""
         username = ChatClient.getInstance().currentUser
+
 
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
