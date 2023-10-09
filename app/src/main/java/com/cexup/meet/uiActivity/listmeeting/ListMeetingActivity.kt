@@ -1,13 +1,10 @@
 package com.cexup.meet.uiActivity.listmeeting
 
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cexup.meet.R
 import com.cexup.meet.data.MeetingRoom
@@ -20,11 +17,6 @@ import kotlin.system.exitProcess
 class ListMeetingActivity : AppCompatActivity() {
     private lateinit var binding: ActivityListMeetingBinding
     private lateinit var adapter : ListMeetingAdapter
-
-
-    private val ReqID = 22
-    private val REQUESTED_PERMISSION =
-        arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.CAMERA)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,33 +83,5 @@ class ListMeetingActivity : AppCompatActivity() {
         } else{
             super.onBackPressed()
         }
-    }
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus){
-            sendPermReq()
-        }
-    }
-    private fun sendPermReq() {
-        if (checkSelfPermission()){
-            //nothing
-        }else{
-            ActivityCompat.requestPermissions(this, REQUESTED_PERMISSION, ReqID)
-        }
-    }
-
-    private fun checkSelfPermission(): Boolean {
-        if (ContextCompat.checkSelfPermission(
-                this,
-                REQUESTED_PERMISSION[0]
-            ) != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(
-                this,
-                REQUESTED_PERMISSION[1]
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return false
-        }
-        return true
     }
 }

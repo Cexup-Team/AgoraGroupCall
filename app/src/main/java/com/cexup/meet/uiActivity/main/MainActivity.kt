@@ -26,7 +26,6 @@ import androidx.core.view.setPadding
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView.LayoutParams
 import com.cexup.meet.MainApplication
 import com.cexup.meet.R
 import com.cexup.meet.data.AccountInfo
@@ -201,6 +200,7 @@ class MainActivity : AppCompatActivity() {
 
         val userAccount = AccountInfo(uidLocal, "Local User", surfaceView, false)
         listMember.add(userAccount)
+        viewModel.ChangeCount()
 
         adapterVideo.submitList(listMember)
         adapterVideo.notifyItemChanged(listMember.indexOf(adapterVideo.getItemByTag(uidLocal)))
@@ -226,14 +226,12 @@ class MainActivity : AppCompatActivity() {
 
                 val userAccount = AccountInfo(uid, "Remote User $uid", surfaceView,false)
                 listMember.add(userAccount)
+                viewModel.ChangeCount()
 
                 adapterVideo.submitList(listMember)
                 adapterVideo.notifyItemChanged(adapterVideo.currentList.size - 1)
 
                 binding.member.text = "${listMember.size}"
-                if(adapterVideo.itemCount >= 2){
-                    binding.videosRecycleView.layoutManager = gridLayoutManager
-                }
             }
         }
 
@@ -244,7 +242,7 @@ class MainActivity : AppCompatActivity() {
                     override fun run() {
                         listMember.find { it.uid == uid }?.username = userAccount
                     }
-                }, 1000)
+                }, 2500)
             }
         }
 
@@ -280,26 +278,10 @@ class MainActivity : AppCompatActivity() {
                 rtcEngine?.setupRemoteVideo(VideoCanvas(null, VideoCanvas.RENDER_MODE_HIDDEN, uid))
                 val position = listMember.indexOf(adapterVideo.getItemByTag(uid))
                 listMember.remove(adapterVideo.getItemByTag(uid))
+                viewModel.ChangeCount()
                 adapterVideo.notifyItemRemoved(position)
 
                 binding.member.text = "${listMember.size}"
-                if(adapterVideo.itemCount == 2){
-                    for (i in 1 until adapterVideo.itemCount){
-                        val holder = binding.videosRecycleView.findViewHolderForAdapterPosition(i)
-                        if (holder != null){
-                            holder.itemView.layoutParams.width = LayoutParams.MATCH_PARENT
-                        }
-                    }
-                } else{
-                    for (i in 1 until adapterVideo.itemCount){
-                        val holder = binding.videosRecycleView.findViewHolderForAdapterPosition(i)
-                        if (holder != null){
-                            holder.itemView.layoutParams.width = LayoutParams.MATCH_PARENT
-                            holder.itemView.layoutParams.height = LayoutParams.MATCH_PARENT
-                        }
-                    }
-                    binding.videosRecycleView.layoutManager = linearLayoutManager
-                }
             }
         }
     }
@@ -311,7 +293,7 @@ class MainActivity : AppCompatActivity() {
             options.clientRoleType = Constants.CLIENT_ROLE_BROADCASTER
             rtcEngine?.startPreview()
 
-            if (username.isNullOrBlank()){
+            if (username.isBlank()){
                 rtcEngine?.joinChannel(token, channelName, uidLocal, options)
             } else{
                 rtcEngine?.joinChannelWithUserAccount(token ,channelName, username, options)
@@ -372,10 +354,19 @@ class MainActivity : AppCompatActivity() {
         checkPref()
         joinChannel()
         joinChatRoom()
-        setIcon()
+//        setIcon()
 
         binding.videosRecycleView.adapter = adapterVideo
 
+        viewModel.memberCount.observe(this){list ->
+            if (list.size < 2){
+                binding.videosRecycleView.layoutManager = linearLayoutManager
+            } else{
+                binding.videosRecycleView.layoutManager = gridLayoutManager
+            }
+            binding.videosRecycleView.adapter = null
+            binding.videosRecycleView.adapter = adapterVideo
+        }
         viewModel.isScreenSharing.observe(this){isSharing ->
             isShareScreen = isSharing
             if (isSharing){
@@ -531,6 +522,7 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
 
     private fun setIcon() {
         when(TempMeeting.isVolumeOff){
@@ -701,10 +693,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        try {
-            checkUnread()
-        } catch (e:Exception){
-            Log.e("Exception", e.message.toString())
+        if (hasFocus){
+            setIcon()
+            try {
+                checkUnread()
+            } catch (e:Exception){
+                Log.e("Exception", e.message.toString())
+            }
         }
     }
 
