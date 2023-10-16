@@ -70,7 +70,6 @@ class MainActivity : AppCompatActivity() {
     private val screenCaptureParameters = ScreenCaptureParameters()
     private var isShareScreen : Boolean = false
     private var rtcEngine: RtcEngine? = null
-    private var isProbeTestRunning = false
     private var downlinkState = 0
 
     private lateinit var meetingDetails : MeetingRoom
@@ -299,18 +298,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateNetworkStatus(rxQuality: Int) {
-        if (rxQuality in 1..2){
-            rtcEngine?.muteAllRemoteVideoStreams(false)
-            for(i in 0 until listMember.size){
-                rtcEngine?.setRemoteVideoStreamType(listMember[i].uid, Constants.VIDEO_STREAM_HIGH)
+        if (pref.getPrefString("Resolution" ) == "Auto"){
+            if (rxQuality in 1..2){
+                rtcEngine?.muteAllRemoteVideoStreams(false)
+                for(i in 0 until listMember.size){
+                    rtcEngine?.setRemoteVideoStreamType(listMember[i].uid, Constants.VIDEO_STREAM_HIGH)
+                }
+            } else if (rxQuality <= 4){
+                rtcEngine?.muteAllRemoteVideoStreams(false)
+                for(i in 0 until listMember.size){
+                    rtcEngine?.setRemoteVideoStreamType(listMember[i].uid, Constants.VIDEO_STREAM_LOW)
+                }
+            } else if (rxQuality <= 6){
+                rtcEngine?.muteAllRemoteVideoStreams(true)
             }
-        } else if (rxQuality <= 4){
-            rtcEngine?.muteAllRemoteVideoStreams(false)
-            for(i in 0 until listMember.size){
-                rtcEngine?.setRemoteVideoStreamType(listMember[i].uid, Constants.VIDEO_STREAM_LOW)
-            }
-        } else if (rxQuality <= 6){
-            rtcEngine?.muteAllRemoteVideoStreams(true)
         }
     }
 
@@ -493,36 +494,37 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnAudioMode.setOnClickListener {
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("Audio Mode")
-            builder.setMessage("this mode will turn off all video from remote user")
+            AlertDialog.Builder(this)
+                .setTitle("Audio Mode")
+                .setMessage("this mode will turn off all video from remote user")
 
-            builder.setNeutralButton("Dismiss"){ dialog : DialogInterface, _: Int ->
-                dialog.cancel()
-            }
-
-            builder.setNegativeButton("Turn Off"){ dialog : DialogInterface, _: Int ->
-                try {
-                    rtcEngine?.muteAllRemoteVideoStreams(false)
+                .setNeutralButton("Dismiss"){ dialog : DialogInterface, _: Int ->
                     dialog.cancel()
-                    adapterVideo.notifyDataSetChanged()
-                }catch (e: Exception){
-                    Log.w("muteAllRemoteVideoStreams", "muteAllRemoteVideoStreams(false)")
                 }
-            }
 
-            builder.setPositiveButton("Turn On"){ dialog : DialogInterface, _: Int ->
-                try {
-                    rtcEngine?.muteAllRemoteVideoStreams(true)
-                    dialog.cancel()
-                    adapterVideo.notifyDataSetChanged()
-                }catch (e: Exception){
-                    Log.w("muteAllRemoteVideoStreams", "muteAllRemoteVideoStreams(true)")
+                .setNegativeButton("Turn Off"){ dialog : DialogInterface, _: Int ->
+                    try {
+                        rtcEngine?.muteAllRemoteVideoStreams(false)
+                        Log.w("muteAllRemoteVideoStreams", "muteAllRemoteVideoStreams(false)")
+                        pref.savePrefString("Resolution", "Auto")
+                        dialog.cancel()
+                        adapterVideo.notifyDataSetChanged()
+                    }catch (e: Exception){
+                        Log.w("muteAllRemoteVideoStreams", e.message?: "")
+                    }
                 }
-            }
-
-            val alert = builder.create()
-            alert.show()
+                .setPositiveButton("Turn On"){ dialog : DialogInterface, _: Int ->
+                    try {
+                        rtcEngine?.muteAllRemoteVideoStreams(true)
+                        pref.savePrefString("Resolution", "Audio Only")
+                        Log.w("muteAllRemoteVideoStreams", "muteAllRemoteVideoStreams(true)")
+                        dialog.cancel()
+                        adapterVideo.notifyDataSetChanged()
+                    }catch (e: Exception){ Log.w("muteAllRemoteVideoStreams", e.message ?: "")
+                    }
+                }
+                .create()
+                .show()
         }
 
         binding.btnSetting.setOnClickListener {
@@ -599,14 +601,20 @@ class MainActivity : AppCompatActivity() {
         if (resolution != null){
             when (resolution){
                 "High" -> {
-                    for(i in 0 until listMember.size){
-                        rtcEngine?.setRemoteVideoStreamType(listMember[i].uid, Constants.VIDEO_STREAM_HIGH)
+                    rtcEngine?.muteAllRemoteVideoStreams(false)
+                    for(i in 0 until TempMeeting.ListMember.size){
+                        rtcEngine?.setRemoteVideoStreamType(TempMeeting.ListMember[i].uid, Constants.VIDEO_STREAM_HIGH)
                     }
                 }
-                "Low" -> {
-                    for(i in 0 until listMember.size){
-                        rtcEngine?.setRemoteVideoStreamType(listMember[i].uid, Constants.VIDEO_STREAM_LOW)
+                "Medium" -> {
+                    rtcEngine?.muteAllRemoteVideoStreams(false)
+                    for(i in 0 until TempMeeting.ListMember.size){
+                        rtcEngine?.setRemoteVideoStreamType(TempMeeting.ListMember[i].uid, Constants.VIDEO_STREAM_LOW)
                     }
+                }
+
+                "Audio Only" -> {
+                    rtcEngine?.muteAllRemoteVideoStreams(true)
                 }
             }
         }

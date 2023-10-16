@@ -31,7 +31,7 @@ class SettingActivity : AppCompatActivity(){
     private var bgSource = VirtualBackgroundSource()
     private var segmentationProperty = SegmentationProperty()
     private var bgColorDefault = 0x000000
-    private val resOption = arrayOf("Auto", "High", "Low")
+    private val resOption = arrayOf("Auto", "High", "Medium", "Audio Only")
 //    private val bgOption = arrayOf("Off", "Blur", "Color", "Image")
     private val bgOption = arrayOf("Off", "Blur", "Color")
     private val colorOption = arrayOf("Black", "White", "Red", "Green", "Blue", "Yellow", "Cyan", "Magenta")
@@ -93,14 +93,20 @@ class SettingActivity : AppCompatActivity(){
             ) {
                 when(resOption[position]){
                     "High" -> {
+                        rtcEngine?.muteAllRemoteVideoStreams(false)
                         for(i in 0 until TempMeeting.ListMember.size){
                             rtcEngine?.setRemoteVideoStreamType(TempMeeting.ListMember[i].uid, Constants.VIDEO_STREAM_HIGH)
                         }
                     }
-                    "Low" -> {
+                    "Medium" -> {
+                        rtcEngine?.muteAllRemoteVideoStreams(false)
                         for(i in 0 until TempMeeting.ListMember.size){
                             rtcEngine?.setRemoteVideoStreamType(TempMeeting.ListMember[i].uid, Constants.VIDEO_STREAM_LOW)
                         }
+                    }
+
+                    "Audio Only" -> {
+                        rtcEngine?.muteAllRemoteVideoStreams(true)
                     }
                 }
 
