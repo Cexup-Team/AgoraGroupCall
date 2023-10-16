@@ -15,10 +15,12 @@ import com.cexup.meet.data.MeetingRoom
 import com.cexup.meet.databinding.ActivityAuthBinding
 import com.cexup.meet.uiActivity.listmeeting.ListMeetingActivity
 import com.cexup.meet.uiActivity.main.MainActivity
+import com.cexup.meet.utils.DataPreference
 
 class AuthActivity : AppCompatActivity() {
     private lateinit var binding : ActivityAuthBinding
     private lateinit var viewModel: AuthViewModel
+    private lateinit var pref : DataPreference
 
     private val ReqID = 22
     private val REQUESTED_PERMISSION =
@@ -27,6 +29,11 @@ class AuthActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        pref = DataPreference(this)
+        if (pref.getPrefString("Resolution") != null){
+            pref.savePrefString("Resolution", "Auto")
+        }
 
         viewModel = ViewModelProvider(this)[AuthViewModel::class.java]
 

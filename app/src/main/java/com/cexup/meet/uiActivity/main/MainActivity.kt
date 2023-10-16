@@ -70,6 +70,8 @@ class MainActivity : AppCompatActivity() {
     private val screenCaptureParameters = ScreenCaptureParameters()
     private var isShareScreen : Boolean = false
     private var rtcEngine: RtcEngine? = null
+    private var isProbeTestRunning = false
+    private var downlinkState = 0
 
     private lateinit var meetingDetails : MeetingRoom
     private lateinit var handler: Handler
@@ -266,6 +268,7 @@ class MainActivity : AppCompatActivity() {
             }
             runOnUiThread { adapterVideo.notifyDataSetChanged()}
         }
+
         override fun onJoinChannelSuccess(channel: String?, uid: Int, elapsed: Int) {
             runOnUiThread { showMessage("Joined Channel $channel") }
             uidLocal = uid
@@ -284,7 +287,33 @@ class MainActivity : AppCompatActivity() {
                 binding.member.text = "${listMember.size}"
             }
         }
+        
+        override fun onNetworkQuality(uid: Int, txQuality: Int, rxQuality: Int) {
+            super.onNetworkQuality(uid, txQuality, rxQuality)
+            if ( downlinkState!= rxQuality){
+                downlinkState = rxQuality
+                Log.e("onNetworkQuality", "uplink = $txQuality, downlink = $rxQuality")
+                updateNetworkStatus(rxQuality)
+            }
+        }
     }
+
+    private fun updateNetworkStatus(rxQuality: Int) {
+        if (rxQuality in 1..2){
+            rtcEngine?.muteAllRemoteVideoStreams(false)
+            for(i in 0 until listMember.size){
+                rtcEngine?.setRemoteVideoStreamType(listMember[i].uid, Constants.VIDEO_STREAM_HIGH)
+            }
+        } else if (rxQuality <= 4){
+            rtcEngine?.muteAllRemoteVideoStreams(false)
+            for(i in 0 until listMember.size){
+                rtcEngine?.setRemoteVideoStreamType(listMember[i].uid, Constants.VIDEO_STREAM_LOW)
+            }
+        } else if (rxQuality <= 6){
+            rtcEngine?.muteAllRemoteVideoStreams(true)
+        }
+    }
+
 
     private fun joinChannel() {
         if (checkSelfPermission()) {
@@ -351,10 +380,10 @@ class MainActivity : AppCompatActivity() {
         adapterVideo = VideoAdapter()
 
         initVidSDK()
-        checkPref()
         joinChannel()
-        joinChatRoom()
-//        setIcon()
+        if (roomID.isNotBlank()){
+            joinChatRoom()
+        }
 
         binding.videosRecycleView.adapter = adapterVideo
 
@@ -468,11 +497,11 @@ class MainActivity : AppCompatActivity() {
             builder.setTitle("Audio Mode")
             builder.setMessage("this mode will turn off all video from remote user")
 
-            builder.setNeutralButton("Dismiss"){dialog : DialogInterface, which: Int ->
+            builder.setNeutralButton("Dismiss"){ dialog : DialogInterface, _: Int ->
                 dialog.cancel()
             }
 
-            builder.setNegativeButton("Turn Off"){dialog : DialogInterface, which: Int ->
+            builder.setNegativeButton("Turn Off"){ dialog : DialogInterface, _: Int ->
                 try {
                     rtcEngine?.muteAllRemoteVideoStreams(false)
                     dialog.cancel()
@@ -482,7 +511,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            builder.setPositiveButton("Turn On"){dialog : DialogInterface, which : Int ->
+            builder.setPositiveButton("Turn On"){ dialog : DialogInterface, _: Int ->
                 try {
                     rtcEngine?.muteAllRemoteVideoStreams(true)
                     dialog.cancel()
@@ -566,20 +595,31 @@ class MainActivity : AppCompatActivity() {
     }
     private fun checkPref() {
         //resolution
-        if (pref.getResolution() != null){
-            when (pref.getResolution()){
-                "High" -> rtcEngine?.setRemoteVideoStreamType(0, Constants.VIDEO_STREAM_HIGH)
-                "Low" -> rtcEngine?.setRemoteVideoStreamType(0, Constants.VIDEO_STREAM_LOW)
+        val resolution = pref.getPrefString("Resolution")
+        if (resolution != null){
+            when (resolution){
+                "High" -> {
+                    for(i in 0 until listMember.size){
+                        rtcEngine?.setRemoteVideoStreamType(listMember[i].uid, Constants.VIDEO_STREAM_HIGH)
+                    }
+                }
+                "Low" -> {
+                    for(i in 0 until listMember.size){
+                        rtcEngine?.setRemoteVideoStreamType(listMember[i].uid, Constants.VIDEO_STREAM_LOW)
+                    }
+                }
             }
         }
 
-        if (pref.getPrefBG() != null){
+        //bg
+        val prefBG = pref.getPrefString("PrefBG")
+        if (prefBG!= null){
             val segmentationProperty = SegmentationProperty()
             segmentationProperty.modelType = SegmentationProperty.SEG_MODEL_AI
             segmentationProperty.greenCapacity = 0.5f
 
             val bgSource = VirtualBackgroundSource()
-            when (pref.getPrefBG()){
+            when (prefBG){
                 "Off" -> {
                     rtcEngine?.enableVirtualBackground(
                         false,
@@ -599,7 +639,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 "Color" -> {
                     bgSource.backgroundSourceType = VirtualBackgroundSource.BACKGROUND_COLOR
-                    bgSource.color = pref.getColorBG()
+                    bgSource.color = pref.getPrefInt("ColorBG")
 
                     rtcEngine?.enableVirtualBackground(
                         true,
@@ -695,6 +735,7 @@ class MainActivity : AppCompatActivity() {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus){
             setIcon()
+            checkPref()
             try {
                 checkUnread()
             } catch (e:Exception){
@@ -711,6 +752,7 @@ class MainActivity : AppCompatActivity() {
         rtcEngine?.leaveChannel()
         rtcEngine?.setupLocalVideo(VideoCanvas(null, VideoCanvas.RENDER_MODE_HIDDEN, uidLocal))
         rtcEngine?.setupRemoteVideo(VideoCanvas(null, VideoCanvas.RENDER_MODE_HIDDEN))
+        rtcEngine?.stopLastmileProbeTest()
         listMember.clear()
 
         ChatClient.getInstance().chatroomManager().leaveChatRoom(roomID)

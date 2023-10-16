@@ -6,30 +6,23 @@ internal class DataPreference(context: Context){
 
     private val preferences = context.getSharedPreferences("USER_PREF", Context.MODE_PRIVATE)
 
-    fun getResolution():String?{
-        return preferences.getString("Resolution", "")
+    fun getPrefString(key:String):String?{
+        return preferences.getString(key, "")
     }
-    fun saveResolution(Res : String){
+
+    fun savePrefString(key: String, value: String){
         val editor = preferences.edit()
-        editor.putString("Resolution", Res)
+        editor.putString(key, value)
         editor.apply()
     }
 
-    fun getPrefBG():String?{
-        return preferences.getString("PrefBG", "")
-    }
-    fun savePrefBG(Res : String){
-        val editor = preferences.edit()
-        editor.putString("PrefBG", Res)
-        editor.apply()
+    fun getPrefInt(key: String): Int{
+        return preferences.getInt(key, 0)
     }
 
-    fun getColorBG():Int{
-        return preferences.getInt("ColorBG", 0x000000)
-    }
-    fun saveColorBG(color : Int){
+    fun savePrefInt(key: String, value: Int){
         val editor = preferences.edit()
-        editor.putInt("ColorBG", color)
+        editor.putInt(key, value)
         editor.apply()
     }
 
