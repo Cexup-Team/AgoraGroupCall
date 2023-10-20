@@ -289,7 +289,7 @@ class MainActivity : AppCompatActivity() {
         
         override fun onNetworkQuality(uid: Int, txQuality: Int, rxQuality: Int) {
             super.onNetworkQuality(uid, txQuality, rxQuality)
-            if ( downlinkState!= rxQuality){
+            if ( uid == uidLocal && downlinkState!= rxQuality){
                 downlinkState = rxQuality
                 Log.e("onNetworkQuality", "uplink = $txQuality, downlink = $rxQuality")
                 updateNetworkStatus(rxQuality)
