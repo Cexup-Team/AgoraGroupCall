@@ -8,7 +8,7 @@ import io.agora.rtc2.RtcEngine
 import io.agora.rtc2.RtcEngineConfig
 import io.agora.rtc2.proxy.LocalAccessPointConfiguration
 
-object VidSDK {
+object RtcSDK {
     var rtcEngine : RtcEngine? = null
 
     fun initSDK(
@@ -43,5 +43,15 @@ object VidSDK {
         } catch (e: Exception) {
             Log.e("Vid SDK", "Exception : ${e.message}")
         }
+    }
+
+    fun getRtcEventHandler(context: Context):IRtcEngineEventHandler{
+        val eventHandler = object : IRtcEngineEventHandler(){
+            override fun onUserJoined(uid: Int, elapsed: Int) {
+                super.onUserJoined(uid, elapsed)
+                Log.e("", "")
+            }
+        }
+        return eventHandler
     }
 }

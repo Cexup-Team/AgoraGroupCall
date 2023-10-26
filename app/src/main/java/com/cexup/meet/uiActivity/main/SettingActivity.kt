@@ -16,7 +16,7 @@ import androidx.core.view.isVisible
 import com.cexup.meet.databinding.ActivitySettingBinding
 import com.cexup.meet.utils.DataPreference
 import com.cexup.meet.utils.TempMeeting
-import com.cexup.meet.utils.VidSDK
+import com.cexup.meet.utils.RtcSDK
 import com.github.dhaval2404.imagepicker.ImagePicker
 import io.agora.rtc2.Constants
 import io.agora.rtc2.video.SegmentationProperty
@@ -26,7 +26,7 @@ class SettingActivity : AppCompatActivity(){
     private lateinit var binding: ActivitySettingBinding
     private lateinit var pref : DataPreference
 
-    private var rtcEngine = VidSDK.rtcEngine
+    private var rtcEngine = RtcSDK.rtcEngine
     private var isEnabled = false
     private var bgSource = VirtualBackgroundSource()
     private var segmentationProperty = SegmentationProperty()

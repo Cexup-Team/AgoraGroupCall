@@ -29,19 +29,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.cexup.meet.MainApplication
 import com.cexup.meet.R
 import com.cexup.meet.data.AccountInfo
-import com.cexup.meet.data.MeetingRoom
 import com.cexup.meet.databinding.ActivityMainBinding
 import com.cexup.meet.uiActivity.VideoAdapter
 import com.cexup.meet.uiActivity.chat.ChatActivity
 import com.cexup.meet.utils.DataPreference
-import com.cexup.meet.utils.MediaProjectFgService
 import com.cexup.meet.utils.SDKManager
 import com.cexup.meet.utils.TempMeeting
-import com.cexup.meet.utils.VidSDK
-import io.agora.ValueCallBack
-import io.agora.chat.ChatClient
-import io.agora.chat.ChatMessage
-import io.agora.chat.ChatRoom
+import com.cexup.meet.utils.RtcSDK
+import com.cexup.meet.utils.RtmSDK
 import io.agora.rtc2.ChannelMediaOptions
 import io.agora.rtc2.Constants
 import io.agora.rtc2.IRtcEngineEventHandler
@@ -54,6 +49,7 @@ import io.agora.rtc2.video.VideoEncoderConfiguration
 import io.agora.rtc2.video.VideoEncoderConfiguration.FRAME_RATE
 import io.agora.rtc2.video.VideoEncoderConfiguration.ORIENTATION_MODE
 import io.agora.rtc2.video.VirtualBackgroundSource
+import io.agora.rtm.ErrorInfo
 import java.util.Timer
 import java.util.TimerTask
 
@@ -65,24 +61,23 @@ class MainActivity : AppCompatActivity() {
         arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.CAMERA)
     private val appId: String = SDKManager.APP_ID
     private var listMember = TempMeeting.ListMember
+    private var username = TempMeeting.username
+    private var rtcToken = TempMeeting.rtcToken
+    private var channelName = TempMeeting.channelName
     private var uidLocal : Int = 0
     private val uidShareScreen = 1
     private val screenCaptureParameters = ScreenCaptureParameters()
     private var isShareScreen : Boolean = false
-    private var rtcEngine: RtcEngine? = null
+    private var rtcEngine= RtcSDK.rtcEngine
+    private var rtmChannel = RtmSDK.rtmChannel
     private var downlinkState = 0
 
-    private lateinit var meetingDetails : MeetingRoom
     private lateinit var handler: Handler
     private lateinit var adapterVideo: VideoAdapter
     private lateinit var fgService: Intent
     private lateinit var viewModel: MainViewModel
     private lateinit var gridLayoutManager: GridLayoutManager
     private lateinit var linearLayoutManager: LinearLayoutManager
-    private lateinit var token : String
-    private lateinit var channelName : String
-    private lateinit var username : String
-    private lateinit var roomID : String
     private lateinit var pref : DataPreference
 
     private fun checkSelfPermission(): Boolean {
@@ -323,11 +318,15 @@ class MainActivity : AppCompatActivity() {
             options.clientRoleType = Constants.CLIENT_ROLE_BROADCASTER
             rtcEngine?.startPreview()
 
-            if (username.isBlank()){
-                rtcEngine?.joinChannel(token, channelName, uidLocal, options)
-            } else{
-                rtcEngine?.joinChannelWithUserAccount(token ,channelName, username, options)
+            try {
+                rtcEngine?.joinChannelWithUserAccount(rtcToken ,channelName, username, options)
+//                RtmSDK.joinChannel(channelName)
+            } catch (e:Exception){
+                Log.e("Exception", e.message ?:"")
+                Toast.makeText(applicationContext, e.message, Toast.LENGTH_LONG).show()
+                finish()
             }
+
         } else {
             Toast.makeText(applicationContext, "Permission was not granted", Toast.LENGTH_SHORT)
                 .show()
@@ -335,41 +334,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkUnread(){
-        val unread = ChatClient.getInstance().chatManager().getConversation(roomID).unreadMsgCount
-        if ( unread > 0){
-            binding.tvUnreadCount.isVisible = true
-            binding.tvUnreadCount.text = unread.toString()
-        }else{
-            binding.tvUnreadCount.isVisible = false
-        }
-    }
+//    private fun checkUnread(){
+//        val unread = ChatClient.getInstance().chatManager().getConversation(roomID).unreadMsgCount
+//        if ( unread > 0){
+//            binding.tvUnreadCount.isVisible = true
+//            binding.tvUnreadCount.text = unread.toString()
+//        }else{
+//            binding.tvUnreadCount.isVisible = false
+//        }
+//    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            fgService = Intent(this, MediaProjectFgService::class.java)
-        }
         handler = Handler(Looper.getMainLooper())
         pref = DataPreference(this)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            meetingDetails = intent.getParcelableExtra("MeetingDetail", MeetingRoom::class.java)!!
-        } else{
-            @Suppress("DEPRECATION")
-            meetingDetails = intent.getParcelableExtra("MeetingDetail")!!
-        }
-
-        if (meetingDetails.roomID.isNullOrBlank()){
-            binding.layoutChat.isVisible = false
-        }
-
-        token = meetingDetails.rtcToken ?: ""
-        channelName = meetingDetails.channelName ?: ""
-        roomID = meetingDetails.roomID ?: ""
-        username = ChatClient.getInstance().currentUser
 
 
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
@@ -382,9 +362,6 @@ class MainActivity : AppCompatActivity() {
 
         initVidSDK()
         joinChannel()
-        if (roomID.isNotBlank()){
-            joinChatRoom()
-        }
 
         binding.videosRecycleView.adapter = adapterVideo
 
@@ -410,20 +387,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        ChatClient.getInstance().chatManager().addMessageListener { messages ->
-            if (messages != null){
-                for (msg in messages){
-                    if (msg.chatType == ChatMessage.ChatType.ChatRoom && msg.to == roomID){
-                        Log.w("MessageListener", "onMessageReceived")
-
-                        runOnUiThread {
-                            checkUnread()
-                            TempMeeting.TempChatRoom.add(msg)
-                        }
-                    }
-                }
-            }
-        }
 
         binding.btnVolume.setOnClickListener {
             if (!TempMeeting.isVolumeOff){
@@ -537,14 +500,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnChat.setOnClickListener {
-            try {
-                ChatClient.getInstance().chatManager().getConversation(roomID).markAllMessagesAsRead()
-            } catch (e: Exception){
-                Log.e("Exception", e.message.toString())
-            }
-
             val moveIntent = Intent(this, ChatActivity::class.java)
-            moveIntent.putExtra("ROOM_ID", roomID)
             moveIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(moveIntent)
 //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -659,30 +615,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun joinChatRoom() {
-        Log.w("CallBack ChatRoom", "Join ChatRoom")
-        ChatClient.getInstance().chatroomManager().joinChatRoom(roomID, object : ValueCallBack<ChatRoom> {
-            override fun onSuccess(value: ChatRoom?) {
-                Log.w("CallBack ChatRoom", "Join ChatRoom Success")
-            }
-
-            override fun onError(error: Int, errorMsg: String?) {
-                Log.w("CallBack ChatRoom", "$error : ${errorMsg.toString()}")
-                Log.w("CallBack ChatRoom", "Retry Join ChatRoom")
-                joinChatRoom()
-            }
-
-        })
-    }
-
 
     private fun initVidSDK() {
         val mAreaCode = (this.application as MainApplication).getGlobalSettings()?.getAreaCode() ?: 0
         val mCloudConfig = (this.application as MainApplication).getGlobalSettings()?.getPrivateCloudConfig()
 
         try {
-            VidSDK.initSDK(baseContext, appId, mRtcEventHandler, mAreaCode, mCloudConfig!!)
-            rtcEngine = VidSDK.rtcEngine
+            RtmSDK.initSDK(baseContext, appId, channelName)
+            RtcSDK.initSDK(baseContext, appId, mRtcEventHandler, mAreaCode, mCloudConfig!!)
+            rtcEngine = RtcSDK.rtcEngine
             rtcEngine?.enableVideo()
 
         } catch (e: Exception) {
@@ -744,11 +685,6 @@ class MainActivity : AppCompatActivity() {
         if (hasFocus){
             setIcon()
             checkPref()
-            try {
-                checkUnread()
-            } catch (e:Exception){
-                Log.e("Exception", e.message.toString())
-            }
         }
     }
 
@@ -763,7 +699,17 @@ class MainActivity : AppCompatActivity() {
         rtcEngine?.stopLastmileProbeTest()
         listMember.clear()
 
-        ChatClient.getInstance().chatroomManager().leaveChatRoom(roomID)
+        rtmChannel?.leave(object : io.agora.rtm.ResultCallback<Void> {
+            override fun onSuccess(p0: Void?) {
+                Log.w("Leave RtmChannel", "Leave Success")
+            }
+
+            override fun onFailure(p0: ErrorInfo?) {
+                Log.w("Leave RtmChannel", "Leave Failed")
+            }
+
+        })
+        rtmChannel?.release()
         TempMeeting.TempChatRoom.clear()
         Thread {
             RtcEngine.destroy()
