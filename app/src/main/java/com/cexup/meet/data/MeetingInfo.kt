@@ -7,5 +7,6 @@ import kotlinx.parcelize.Parcelize
 data class MeetingInfo(
     var rtcToken : String?,
     var rtmToken : String?,
+    var username : String?,
     var channelName : String?,
 ):Parcelable

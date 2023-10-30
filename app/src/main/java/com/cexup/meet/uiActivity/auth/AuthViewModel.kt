@@ -6,7 +6,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cexup.meet.clientAPI.ApiConfig
 import com.cexup.meet.clientAPI.GetTokenResponse
-import com.cexup.meet.utils.TempMeeting
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -19,6 +18,8 @@ class AuthViewModel :ViewModel() {
     val isTokenReceived : LiveData<Boolean> = _isTokenReceived
 
     var errorMSG = ""
+    var rtmToken = ""
+    var rtcToken = ""
 
     fun joinChannel(channel : String, username : String){
         _isLoading.value = true
@@ -43,8 +44,8 @@ class AuthViewModel :ViewModel() {
                         Log.e("Response rtc", body.rtcToken)
                         Log.e("Response rtm", body.rtmToken)
 
-                        TempMeeting.rtcToken = body.rtcToken
-                        TempMeeting.rtmToken = body.rtmToken
+                        rtcToken = body.rtcToken
+                        rtmToken = body.rtmToken
 
                         _isTokenReceived.value = true
                         _isLoading.value = false

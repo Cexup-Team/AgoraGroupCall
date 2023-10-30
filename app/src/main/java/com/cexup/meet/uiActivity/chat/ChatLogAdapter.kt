@@ -31,7 +31,7 @@ class ChatLogAdapter(private val listMessage : List<ChatRTM>): RecyclerView.Adap
 
     override fun getItemViewType(position : Int) : Int{
         val message = listMessage[position]
-        return if (message.username == TempMeeting.username){
+        return if (message.username == TempMeeting.ListMember[0].username){
             VIEW_TYPE_MESSAGE_SENT
         } else{
             VIEW_TYPE_MESSAGE_RECEIVED

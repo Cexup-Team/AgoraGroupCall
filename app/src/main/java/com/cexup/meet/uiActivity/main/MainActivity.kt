@@ -26,17 +26,15 @@ import androidx.core.view.setPadding
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.cexup.meet.MainApplication
 import com.cexup.meet.R
 import com.cexup.meet.data.AccountInfo
+import com.cexup.meet.data.MeetingInfo
 import com.cexup.meet.databinding.ActivityMainBinding
 import com.cexup.meet.uiActivity.VideoAdapter
 import com.cexup.meet.uiActivity.chat.ChatActivity
 import com.cexup.meet.utils.DataPreference
 import com.cexup.meet.utils.SDKManager
 import com.cexup.meet.utils.TempMeeting
-import com.cexup.meet.utils.RtcSDK
-import com.cexup.meet.utils.RtmSDK
 import io.agora.rtc2.ChannelMediaOptions
 import io.agora.rtc2.Constants
 import io.agora.rtc2.IRtcEngineEventHandler
@@ -59,19 +57,16 @@ class MainActivity : AppCompatActivity() {
 
     private val REQUESTED_PERMISSION =
         arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.CAMERA)
-    private val appId: String = SDKManager.APP_ID
     private var listMember = TempMeeting.ListMember
-    private var username = TempMeeting.username
-    private var rtcToken = TempMeeting.rtcToken
-    private var channelName = TempMeeting.channelName
     private var uidLocal : Int = 0
     private val uidShareScreen = 1
     private val screenCaptureParameters = ScreenCaptureParameters()
     private var isShareScreen : Boolean = false
-    private var rtcEngine= RtcSDK.rtcEngine
-    private var rtmChannel = RtmSDK.rtmChannel
+    private var rtcEngine : RtcEngine? = null
+    private var rtmChannel = SDKManager.rtmChannel
     private var downlinkState = 0
 
+    private lateinit var meetingDetails : MeetingInfo
     private lateinit var handler: Handler
     private lateinit var adapterVideo: VideoAdapter
     private lateinit var fgService: Intent
@@ -249,7 +244,7 @@ class MainActivity : AppCompatActivity() {
                     override fun run() {
                         listMember.find { it.uid == uid }?.username = userInfo.userAccount
                     }
-                }, 1000)
+                }, 2500)
             }
         }
 
@@ -319,8 +314,7 @@ class MainActivity : AppCompatActivity() {
             rtcEngine?.startPreview()
 
             try {
-                rtcEngine?.joinChannelWithUserAccount(rtcToken ,channelName, username, options)
-//                RtmSDK.joinChannel(channelName)
+                rtcEngine?.joinChannelWithUserAccount(meetingDetails.rtcToken ,meetingDetails.channelName, meetingDetails.username, options)
             } catch (e:Exception){
                 Log.e("Exception", e.message ?:"")
                 Toast.makeText(applicationContext, e.message, Toast.LENGTH_LONG).show()
@@ -351,6 +345,12 @@ class MainActivity : AppCompatActivity() {
         handler = Handler(Looper.getMainLooper())
         pref = DataPreference(this)
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            meetingDetails = intent.getParcelableExtra("Meeting_Info", MeetingInfo::class.java)!!
+        } else{
+            @Suppress("DEPRECATION")
+            meetingDetails = intent.getParcelableExtra("Meeting_Info")!!
+        }
 
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
@@ -360,7 +360,7 @@ class MainActivity : AppCompatActivity() {
         binding.videosRecycleView.layoutManager = linearLayoutManager
         adapterVideo = VideoAdapter()
 
-        initVidSDK()
+        initSDK()
         joinChannel()
 
         binding.videosRecycleView.adapter = adapterVideo
@@ -495,12 +495,13 @@ class MainActivity : AppCompatActivity() {
             moveIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(moveIntent)
         }
-        binding.btnLeave.setOnClickListener {
+        binding.btnCall.setOnClickListener {
             finish()
         }
 
         binding.btnChat.setOnClickListener {
             val moveIntent = Intent(this, ChatActivity::class.java)
+            moveIntent.putExtra("Meeting_Info", meetingDetails)
             moveIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(moveIntent)
 //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -616,14 +617,12 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun initVidSDK() {
-        val mAreaCode = (this.application as MainApplication).getGlobalSettings()?.getAreaCode() ?: 0
-        val mCloudConfig = (this.application as MainApplication).getGlobalSettings()?.getPrivateCloudConfig()
-
+    private fun initSDK() {
         try {
-            RtmSDK.initSDK(baseContext, appId, channelName)
-            RtcSDK.initSDK(baseContext, appId, mRtcEventHandler, mAreaCode, mCloudConfig!!)
-            rtcEngine = RtcSDK.rtcEngine
+            SDKManager.initRtmSDK(baseContext, meetingDetails)
+            SDKManager.initRtcSDK(baseContext, mRtcEventHandler)
+            rtcEngine = SDKManager.rtcEngine
+            rtmChannel = SDKManager.rtmChannel
             rtcEngine?.enableVideo()
 
         } catch (e: Exception) {
@@ -634,7 +633,7 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onUserLeaveHint() {
-        if (binding.btnLeave.isVisible){
+        if (binding.btnCall.isVisible){
             usePIP()
         }
     }
@@ -699,22 +698,23 @@ class MainActivity : AppCompatActivity() {
         rtcEngine?.stopLastmileProbeTest()
         listMember.clear()
 
-        rtmChannel?.leave(object : io.agora.rtm.ResultCallback<Void> {
-            override fun onSuccess(p0: Void?) {
-                Log.w("Leave RtmChannel", "Leave Success")
-            }
-
-            override fun onFailure(p0: ErrorInfo?) {
-                Log.w("Leave RtmChannel", "Leave Failed")
-            }
-
-        })
-        rtmChannel?.release()
         TempMeeting.TempChatRoom.clear()
         Thread {
             RtcEngine.destroy()
-        }.start()
 
+            rtmChannel?.leave(object : io.agora.rtm.ResultCallback<Void> {
+                override fun onSuccess(p0: Void?) {
+                    rtmChannel?.release()
+                    SDKManager.logoutRTM()
+                    Log.w("Leave RtmChannel", "Leave Success")
+                }
+
+                override fun onFailure(p0: ErrorInfo?) {
+                    Log.w("Leave RtmChannel", "Leave Failed")
+                }
+
+            })
+        }.start()
         Intent.FLAG_ACTIVITY_CLEAR_TASK
     }
 }

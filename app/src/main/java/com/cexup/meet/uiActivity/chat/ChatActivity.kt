@@ -1,5 +1,6 @@
 package com.cexup.meet.uiActivity.chat
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -9,10 +10,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cexup.meet.R
 import com.cexup.meet.data.ChatRTM
+import com.cexup.meet.data.MeetingInfo
 import com.cexup.meet.databinding.ActivityChatBinding
 import com.cexup.meet.utils.TempMeeting
-import com.cexup.meet.utils.RtcSDK
-import com.cexup.meet.utils.RtmSDK
+import com.cexup.meet.utils.SDKManager
 import io.agora.rtm.ErrorInfo
 import io.agora.rtm.ResultCallback
 
@@ -22,14 +23,22 @@ class ChatActivity : AppCompatActivity(){
     private lateinit var binding: ActivityChatBinding
     private lateinit var viewModel: ChatViewModel
     private lateinit var adapterChat : ChatLogAdapter
+    private lateinit var meetingDetails : MeetingInfo
 
-    private  var rtcEngine = RtcSDK.rtcEngine
-    private var rtmClient = RtmSDK.rtmClient
-    private var rtmChannel = RtmSDK.rtmChannel
+    private  var rtcEngine = SDKManager.rtcEngine
+    private var rtmClient = SDKManager.rtmClient
+    private var rtmChannel = SDKManager.rtmChannel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            meetingDetails = intent.getParcelableExtra("Meeting_Info", MeetingInfo::class.java)!!
+        } else{
+            @Suppress("DEPRECATION")
+            meetingDetails = intent.getParcelableExtra("Meeting_Info")!!
+        }
 
         seticon()
 
@@ -88,8 +97,8 @@ class ChatActivity : AppCompatActivity(){
                         override fun onSuccess(p0: Void?) {
                             TempMeeting.TempChatRoom.add(
                                 ChatRTM(
-                                    TempMeeting.username,
-                                    TempMeeting.channelName,
+                                    "TempMeeting.username",
+                                    "TempMeeting.channelName",
                                     message
                                 )
                             )
@@ -137,15 +146,5 @@ class ChatActivity : AppCompatActivity(){
                 TempMeeting.ListMember[0].offCam = false
             }
         }
-    }
-
-    private fun parseMessage(it:String): String {
-        val splitMessage = it.split("")
-        var contentMessage = ""
-        for(i in 6 .. (splitMessage.size - 3)){
-            contentMessage += splitMessage[i]
-        }
-
-        return contentMessage
     }
 }

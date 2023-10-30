@@ -8,11 +8,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
+import com.cexup.meet.data.MeetingInfo
 import com.cexup.meet.databinding.ActivityAuthBinding
 import com.cexup.meet.uiActivity.main.MainActivity
 import com.cexup.meet.utils.DataPreference
-import com.cexup.meet.utils.RtmSDK
-import com.cexup.meet.utils.TempMeeting
 
 class AuthActivity : AppCompatActivity() {
     private lateinit var binding : ActivityAuthBinding
@@ -21,7 +20,6 @@ class AuthActivity : AppCompatActivity() {
 
     private var username = ""
     private var channel = ""
-    private var rtmClient = RtmSDK.rtmClient
 
     private val ReqID = 22
     private val REQUESTED_PERMISSION =
@@ -56,7 +54,11 @@ class AuthActivity : AppCompatActivity() {
 
         viewModel.isTokenReceived.observe(this){isTokenReceived ->
             if (isTokenReceived){
-                startActivity(Intent(this@AuthActivity, MainActivity::class.java))
+                val rtmToken = viewModel.rtmToken
+                val rtcToken = viewModel.rtcToken
+                val moveIntent = Intent(this@AuthActivity, MainActivity::class.java)
+                moveIntent.putExtra("Meeting_Info", MeetingInfo(rtcToken = rtcToken, rtmToken = rtmToken, username = username, channelName = channel))
+                startActivity(moveIntent)
             }
         }
 
@@ -64,10 +66,8 @@ class AuthActivity : AppCompatActivity() {
             username = binding.tieUsername.text.toString()
             channel = binding.tieChannel.text.toString()
 
-            TempMeeting.username = username
-            TempMeeting.channelName = channel
            if (checkSelfPermission()){
-               viewModel.joinChannel(username, channel)
+               viewModel.joinChannel(channel, username)
            }else{
                sendPermReq()
            }
