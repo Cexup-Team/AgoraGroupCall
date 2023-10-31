@@ -1,8 +1,10 @@
 package com.cexup.meet.uiActivity.chat
 
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -46,10 +48,9 @@ class ChatActivity : AppCompatActivity(){
 
         binding.rvChatlog.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
-        viewModel.chatLog.observe(this){ list ->
-            adapterChat = ChatLogAdapter(list)
-            binding.rvChatlog.adapter = adapterChat
-        }
+        adapterChat = ChatLogAdapter(TempMeeting.TempChatRoom)
+        binding.rvChatlog.adapter = adapterChat
+        binding.rvChatlog.scrollToPosition(TempMeeting.TempChatRoom.size - 1)
 
         binding.btnVidcamChat.setOnClickListener {
             if (!TempMeeting.isCameraOff){
@@ -97,11 +98,17 @@ class ChatActivity : AppCompatActivity(){
                         override fun onSuccess(p0: Void?) {
                             TempMeeting.TempChatRoom.add(
                                 ChatRTM(
-                                    "TempMeeting.username",
-                                    "TempMeeting.channelName",
+                                    meetingDetails.username?: "UserName",
+                                    meetingDetails.channelName?: "Channel Name",
                                     message
                                 )
                             )
+
+                            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                            imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
+                            etMessage.clear()
+                            adapterChat.notifyDataSetChanged()
+                            binding.rvChatlog.scrollToPosition(TempMeeting.TempChatRoom.size - 1)
                         }
 
                         override fun onFailure(p0: ErrorInfo?) {

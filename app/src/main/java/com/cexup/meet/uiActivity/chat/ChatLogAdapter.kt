@@ -8,7 +8,7 @@ import com.cexup.meet.databinding.ItemChatReceivedBinding
 import com.cexup.meet.databinding.ItemChatSentBinding
 import com.cexup.meet.utils.TempMeeting
 
-class ChatLogAdapter(private val listMessage : List<ChatRTM>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class ChatLogAdapter(private val listMessage : MutableList<ChatRTM>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val VIEW_TYPE_MESSAGE_SENT = 0
     private val VIEW_TYPE_MESSAGE_RECEIVED = 1
 
@@ -22,7 +22,7 @@ class ChatLogAdapter(private val listMessage : List<ChatRTM>): RecyclerView.Adap
 
     class ReceivedMessage(private val receivedBinding: ItemChatReceivedBinding) : RecyclerView.ViewHolder(receivedBinding.root){
         fun onBind(message : ChatRTM){
-            receivedBinding.receivedUsername.text = message.message.text
+            receivedBinding.receivedUsername.text = message.username
             receivedBinding.receivedMessage.text = message.message.text
 
         }
