@@ -232,8 +232,12 @@ class MainActivity : AppCompatActivity() {
                 Timer().schedule(object : TimerTask(){
                     override fun run() {
                         listMember.find { it.uid == uid }?.username = userAccount
+                        runOnUiThread {
+                            binding.videosRecycleView.adapter = null
+                            binding.videosRecycleView.adapter = adapterVideo
+                        }
                     }
-                }, 2500)
+                }, 2000)
             }
         }
 
@@ -243,8 +247,12 @@ class MainActivity : AppCompatActivity() {
                 Timer().schedule(object : TimerTask(){
                     override fun run() {
                         listMember.find { it.uid == uid }?.username = userInfo.userAccount
+                        runOnUiThread {
+                            binding.videosRecycleView.adapter = null
+                            binding.videosRecycleView.adapter = adapterVideo
+                        }
                     }
-                }, 2500)
+                }, 2000)
             }
         }
 
