@@ -1,37 +1,56 @@
 package com.cexup.meet.uiActivity.chat
 
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.widget.TextView
+import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.cexup.meet.R
+import com.cexup.meet.data.ChatRTM
+import com.cexup.meet.data.MeetingInfo
 import com.cexup.meet.databinding.ActivityChatBinding
 import com.cexup.meet.utils.TempMeeting
-import com.cexup.meet.utils.VidSDK
-import io.agora.CallBack
-import io.agora.ConnectionListener
-import io.agora.chat.ChatClient
-import io.agora.chat.ChatMessage
-import io.agora.chat.ChatMessage.ChatType
+import com.cexup.meet.utils.SDKManager
+import io.agora.rtm.ErrorInfo
+import io.agora.rtm.ResultCallback
 
 class ChatActivity : AppCompatActivity(){
 
 
     private lateinit var binding: ActivityChatBinding
-    private lateinit var roomID : String
+    private lateinit var viewModel: ChatViewModel
+    private lateinit var adapterChat : ChatLogAdapter
+    private lateinit var meetingDetails : MeetingInfo
 
-    private  var rtcEngine = VidSDK.rtcEngine
+    private  var rtcEngine = SDKManager.rtcEngine
+    private var rtmClient = SDKManager.rtmClient
+    private var rtmChannel = SDKManager.rtmChannel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        roomID = intent.getStringExtra("ROOM_ID")!!
-        loadPrevMessage()
-        initListener()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            meetingDetails = intent.getParcelableExtra("Meeting_Info", MeetingInfo::class.java)!!
+        } else{
+            @Suppress("DEPRECATION")
+            meetingDetails = intent.getParcelableExtra("Meeting_Info")!!
+        }
+
         seticon()
+
+        viewModel = ViewModelProvider(this)[ChatViewModel::class.java]
+
+        binding.rvChatlog.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+
+        adapterChat = ChatLogAdapter(TempMeeting.TempChatRoom)
+        binding.rvChatlog.adapter = adapterChat
+        binding.rvChatlog.scrollToPosition(TempMeeting.TempChatRoom.size - 1)
 
         binding.btnVidcamChat.setOnClickListener {
             if (!TempMeeting.isCameraOff){
@@ -70,25 +89,35 @@ class ChatActivity : AppCompatActivity(){
         binding.btnSendChat.setOnClickListener {
             val etMessage = binding.etChat.text
             if (etMessage.isNotBlank()){
-                val message = ChatMessage.createTextSendMessage(etMessage.toString(), roomID)
-                message.chatType = ChatType.ChatRoom
-                message.setMessageStatusCallback(object : CallBack{
-                    override fun onSuccess() {
-                        Log.w("Sent Message", "Message Sent Success")
-                        Log.w("Sent Message", "Room ID : $roomID")
 
-                        addChatView(message)
-                        TempMeeting.TempChatRoom.add(message)
-                        etMessage.clear()
-                        binding.scrollChat.fullScroll(View.FOCUS_DOWN)
-                    }
+                val message = rtmClient?.createMessage()
+                message?.text = etMessage.toString()
 
-                    override fun onError(code: Int, error: String?) {
-                        Log.e("Send CallBack", "$code : ${error.toString()}")
-                    }
+                if (message != null){
+                    rtmChannel?.sendMessage(message, object : ResultCallback<Void>{
+                        override fun onSuccess(p0: Void?) {
+                            TempMeeting.TempChatRoom.add(
+                                ChatRTM(
+                                    meetingDetails.username?: "UserName",
+                                    meetingDetails.channelName?: "Channel Name",
+                                    message
+                                )
+                            )
 
-                })
-                ChatClient.getInstance().chatManager().sendMessage(message)
+                            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                            imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
+                            etMessage.clear()
+                            adapterChat.notifyDataSetChanged()
+                            binding.rvChatlog.scrollToPosition(TempMeeting.TempChatRoom.size - 1)
+                        }
+
+                        override fun onFailure(p0: ErrorInfo?) {
+                            Log.e("SendMessage onFailure", p0.toString())
+                            Toast.makeText(this@ChatActivity, p0?.errorDescription, Toast.LENGTH_LONG).show()
+                        }
+
+                    })
+                }
             }
         }
     }
@@ -122,83 +151,6 @@ class ChatActivity : AppCompatActivity(){
                 rtcEngine?.muteLocalVideoStream(false)
                 rtcEngine?.startPreview()
                 TempMeeting.ListMember[0].offCam = false
-            }
-        }
-    }
-
-    private fun loadPrevMessage() {
-        for (i in TempMeeting.TempChatRoom){
-            addChatView(i)
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        try {
-            ChatClient.getInstance().chatManager().getConversation(roomID).markAllMessagesAsRead()
-        } catch (e: Exception){
-            Log.e("Exception", e.message ?:"")
-        }
-    }
-    private fun initListener(){
-
-        //chat listener
-        Log.w("Listener", "Chat Listener")
-        ChatClient.getInstance().chatManager().addMessageListener { messages ->
-            if (messages != null) {
-                Log.w("Messages", "Message Received")
-                Log.w("Messages", "Size : ${messages.size}")
-
-                for (msg in messages) {
-                    if (msg.chatType == ChatType.ChatRoom && msg.to == roomID){
-                        addChatView(msg)
-                    }
-                }
-            } else {
-                Log.e("Message", "Message is Empty")
-            }
-        }
-
-        //connection listener
-        Log.w("Listener", "conn Listener")
-        ChatClient.getInstance().addConnectionListener(object : ConnectionListener{
-            override fun onConnected() {
-                Log.w("Connection", "Connected")
-            }
-
-            override fun onDisconnected(errorCode: Int) {
-                Log.e("Connection", "Disconnected")
-            }
-        })
-
-    }
-
-    private fun parseMessage(it:String): String {
-        val splitMessage = it.split("")
-        var contentMessage = ""
-        for(i in 6 .. (splitMessage.size - 3)){
-            contentMessage += splitMessage[i]
-        }
-
-        return contentMessage
-    }
-
-    private fun addChatView(message: ChatMessage){
-        runOnUiThread {
-            val messageContent = parseMessage(message.body.toString())
-            val viewListChat = binding.chatLog
-            if (message.from == ChatClient.getInstance().currentUser){
-                val viewChat = layoutInflater.inflate(R.layout.item_chat_sent, null)
-                viewChat.findViewById<TextView>(R.id.sent_username).text = message.from
-                viewChat.findViewById<TextView>(R.id.sent_message).text = messageContent
-                viewListChat.addView(viewChat)
-            } else{
-                val viewChat = layoutInflater.inflate(R.layout.item_chat_received, null)
-                viewChat.findViewById<TextView>(R.id.received_username).text = message.from
-                viewChat.findViewById<TextView>(R.id.received_message).text = messageContent
-
-                viewListChat.addView(viewChat)
-
             }
         }
     }

@@ -48,14 +48,18 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
     implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
 
+    //networking
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+
     //glide
     implementation ("com.github.bumptech.glide:glide:4.16.0")
 
     implementation (fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
     val agora_sdk_version = "4.1.1"
 
-    // chat sdk
-    implementation ("io.agora.rtc:chat-sdk:1.1.0")
+    // agora Rtm
+    implementation ("io.agora.rtm:rtm-sdk:1.4.10")
 
     // case 1: full libs
     implementation ("io.agora.rtc:full-sdk:${agora_sdk_version}")

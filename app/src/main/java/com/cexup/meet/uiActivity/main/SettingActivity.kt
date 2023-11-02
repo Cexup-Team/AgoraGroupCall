@@ -15,8 +15,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.cexup.meet.databinding.ActivitySettingBinding
 import com.cexup.meet.utils.DataPreference
+import com.cexup.meet.utils.SDKManager
 import com.cexup.meet.utils.TempMeeting
-import com.cexup.meet.utils.VidSDK
 import com.github.dhaval2404.imagepicker.ImagePicker
 import io.agora.rtc2.Constants
 import io.agora.rtc2.video.SegmentationProperty
@@ -26,12 +26,12 @@ class SettingActivity : AppCompatActivity(){
     private lateinit var binding: ActivitySettingBinding
     private lateinit var pref : DataPreference
 
-    private var rtcEngine = VidSDK.rtcEngine
+    private var rtcEngine = SDKManager.rtcEngine
     private var isEnabled = false
     private var bgSource = VirtualBackgroundSource()
     private var segmentationProperty = SegmentationProperty()
     private var bgColorDefault = 0x000000
-    private val resOption = arrayOf("High", "Low")
+    private val resOption = arrayOf("Auto", "High", "Medium", "Audio Only")
 //    private val bgOption = arrayOf("Off", "Blur", "Color", "Image")
     private val bgOption = arrayOf("Off", "Blur", "Color")
     private val colorOption = arrayOf("Black", "White", "Red", "Green", "Blue", "Yellow", "Cyan", "Magenta")
@@ -56,7 +56,7 @@ class SettingActivity : AppCompatActivity(){
         setContentView(binding.root)
 
         pref = DataPreference(this)
-        bgColorDefault = pref.getColorBG()
+        bgColorDefault = pref.getPrefInt("ColorBG")
 
         checkPreviewColor()
 
@@ -72,7 +72,7 @@ class SettingActivity : AppCompatActivity(){
 
         resArrayAdapter.setDropDownViewResource(androidx.appcompat.R.layout.support_simple_spinner_dropdown_item)
         binding.spinnerRes.adapter = resArrayAdapter
-        binding.spinnerRes.setSelection(resArrayAdapter.getPosition(pref.getResolution()))
+        binding.spinnerRes.setSelection(resArrayAdapter.getPosition(pref.getPrefString("Resolution")))
 
         val bgArrayAdapter = ArrayAdapter(
             this,
@@ -82,7 +82,7 @@ class SettingActivity : AppCompatActivity(){
 
         bgArrayAdapter.setDropDownViewResource(androidx.appcompat.R.layout.support_simple_spinner_dropdown_item)
         binding.spinnerBackground.adapter = bgArrayAdapter
-        binding.spinnerBackground.setSelection(bgArrayAdapter.getPosition(pref.getPrefBG()))
+        binding.spinnerBackground.setSelection(bgArrayAdapter.getPosition(pref.getPrefString("PrefBG")))
 
         binding.spinnerRes.onItemSelectedListener = object : OnItemSelectedListener{
             override fun onItemSelected(
@@ -92,11 +92,25 @@ class SettingActivity : AppCompatActivity(){
                 id: Long
             ) {
                 when(resOption[position]){
-                    "High" -> rtcEngine?.setRemoteVideoStreamType(0, Constants.VIDEO_STREAM_HIGH)
-                    "Low" -> rtcEngine?.setRemoteVideoStreamType(0, Constants.VIDEO_STREAM_LOW)
+                    "High" -> {
+                        rtcEngine?.muteAllRemoteVideoStreams(false)
+                        for(i in 0 until TempMeeting.ListMember.size){
+                            rtcEngine?.setRemoteVideoStreamType(TempMeeting.ListMember[i].uid, Constants.VIDEO_STREAM_HIGH)
+                        }
+                    }
+                    "Medium" -> {
+                        rtcEngine?.muteAllRemoteVideoStreams(false)
+                        for(i in 0 until TempMeeting.ListMember.size){
+                            rtcEngine?.setRemoteVideoStreamType(TempMeeting.ListMember[i].uid, Constants.VIDEO_STREAM_LOW)
+                        }
+                    }
+
+                    "Audio Only" -> {
+                        rtcEngine?.muteAllRemoteVideoStreams(true)
+                    }
                 }
 
-                pref.saveResolution(resOption[position])
+                pref.savePrefString("Resolution", resOption[position])
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -147,7 +161,7 @@ class SettingActivity : AppCompatActivity(){
                     }
                 }
 
-                pref.savePrefBG(bgOption[position])
+                pref.savePrefString("PrefBG", bgOption[position])
                 setVirtualBackGround()
                 setLocalPreview()
             }
@@ -175,7 +189,7 @@ class SettingActivity : AppCompatActivity(){
                         "Cyan" -> bgColorDefault = 0x00FFFF
                         "Magenta" -> bgColorDefault = 0xFF00FF
                     }
-                    pref.saveColorBG(bgColorDefault)
+                    pref.savePrefInt("ColorBG", bgColorDefault)
                     bgSource.color = bgColorDefault
 
                     checkPreviewColor()
@@ -190,11 +204,6 @@ class SettingActivity : AppCompatActivity(){
             ImagePicker.with(this).crop().compress(1024).maxResultSize(1080, 1080).createIntent {
                 launcherIntentGallery.launch(it)
             }
-//            val intent = Intent()
-//            intent.action = ACTION_GET_CONTENT
-//            intent.type = "image/*"
-//            val chooser = Intent.createChooser(intent, "Choose a Picture")
-//            launcherIntentGallery.launch(chooser)
         }
     }
 

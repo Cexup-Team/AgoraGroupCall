@@ -4,48 +4,66 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import io.agora.CallBack
-import io.agora.chat.ChatClient
+import com.cexup.meet.clientAPI.ApiConfig
+import com.cexup.meet.clientAPI.GetTokenResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class AuthViewModel :ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
-    private val _loggedIn = MutableLiveData<Boolean>()
-    val loggedIn : LiveData<Boolean> = _loggedIn
+    private val _isTokenReceived = MutableLiveData<Boolean>()
+    val isTokenReceived : LiveData<Boolean> = _isTokenReceived
 
     var errorMSG = ""
+    var rtmToken = ""
+    var rtcToken = ""
 
-    init {
-        if (ChatClient.getInstance().isLoggedIn){
-            _loggedIn.postValue(true)
-        }
-    }
-    fun login(username: String, password:String){
+    fun joinChannel(channel : String, username : String){
         _isLoading.value = true
-        if (ChatClient.getInstance().isLoggedIn){
-            Log.w("CallBack Login", "UserLoggedIn")
-            errorMSG = ""
-            _isLoading.postValue(false)
-            _loggedIn.postValue(true)
-        } else{
-            ChatClient.getInstance().login(username, password, object : CallBack{
-                override fun onSuccess() {
-                    Log.w("CallBack Login", "Login Success")
-                    errorMSG = ""
-                    _isLoading.postValue(false)
-                    _loggedIn.postValue(true)
-                }
 
-                override fun onError(code: Int, error: String?) {
-                    Log.w("CallBack Login", "$code : ${error.toString()}")
-                    errorMSG = error.toString()
-                    _isLoading.postValue(false)
-                    _loggedIn.postValue(false)
-                }
+        val client = ApiConfig.getApiService().getToken(
+            channelName = channel,
+            role = "publisher", // "publisher" or "subscriber"
+            tokenType = "userAccount", // uid or userAccount
+            rtcuid = username, // rtcuid (type varies String/Int based on tokenType)
+            rtmuid = username, //rtmuid which is a String
+            expiry = 7200, //in second
+        )
+        client.enqueue(object : Callback<GetTokenResponse>{
+            override fun onResponse(
+                call: Call<GetTokenResponse>,
+                response: Response<GetTokenResponse>
+            ) {
+                Log.e("Call", call.request().url().toString())
+                if (response.isSuccessful){
+                    val body = response.body()
+                    if (body != null){
+                        Log.e("Response rtc", body.rtcToken)
+                        Log.e("Response rtm", body.rtmToken)
 
-            })
-        }
+                        rtcToken = body.rtcToken
+                        rtmToken = body.rtmToken
+
+                        _isTokenReceived.value = true
+                        _isLoading.value = false
+                    }
+                } else{
+                    errorMSG = response.raw().toString()
+                    Log.e("Error ${response.code()}", response.raw().toString())
+                    _isLoading.value = false
+                    _isTokenReceived.value = false
+                }
+            }
+
+            override fun onFailure(call: Call<GetTokenResponse>, t: Throwable) {
+                errorMSG = t.message ?: ""
+                _isLoading.value = false
+                _isTokenReceived.value = false
+            }
+
+        })
     }
-
 }

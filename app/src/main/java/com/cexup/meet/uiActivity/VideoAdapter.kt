@@ -2,13 +2,16 @@ package com.cexup.meet.uiActivity
 
 import android.annotation.SuppressLint
 import android.app.ActionBar.LayoutParams
+import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.cexup.meet.R
 import com.cexup.meet.data.AccountInfo
 import com.cexup.meet.databinding.ItemVideoBinding
 
@@ -21,6 +24,7 @@ class VideoAdapter: ListAdapter<AccountInfo, VideoAdapter.ViewHolder>(VideoDiffC
                     (account.surfaceView.parent as ViewGroup).removeView(account.surfaceView)
                 }
                 itemViewBinding.videoFrame.addView(account.surfaceView)
+
             } else{
                 val placeholder = ImageView(itemView.context)
                 Glide
@@ -30,6 +34,14 @@ class VideoAdapter: ListAdapter<AccountInfo, VideoAdapter.ViewHolder>(VideoDiffC
 
                 itemViewBinding.videoFrame.addView(placeholder)
             }
+
+            val name = TextView(itemView.context)
+            name.text = account.username
+            name.setTextSize(20.0F)
+            name.setTypeface(Typeface.DEFAULT_BOLD)
+            name.setBackgroundResource(R.color.white)
+            name.layoutParams = ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+            itemViewBinding.videoFrame.addView(name)
         }
 
         fun unBind(){

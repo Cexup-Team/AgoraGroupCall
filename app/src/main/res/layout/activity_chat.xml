@@ -128,22 +128,15 @@
             android:drawableEnd="@drawable/ic_setting_gear"/>
     </LinearLayout>
 
-    <ScrollView
+    <androidx.recyclerview.widget.RecyclerView
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:id="@+id/scroll_chat"
+        android:id="@+id/rv_chatlog"
+        app:layout_constraintTop_toBottomOf="@id/topAppBarChat"
+        app:layout_constraintBottom_toTopOf="@id/botAppBarChat"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/topAppBarChat"
-        app:layout_constraintBottom_toTopOf="@id/botAppBarChat">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/chat_log"
-            android:orientation="vertical"/>
-
-    </ScrollView>
+        tools:listitem="@layout/item_chat_sent"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/botAppBarChat"
