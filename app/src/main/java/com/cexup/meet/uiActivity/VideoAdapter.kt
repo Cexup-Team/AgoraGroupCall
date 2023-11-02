@@ -3,6 +3,7 @@ package com.cexup.meet.uiActivity
 import android.annotation.SuppressLint
 import android.app.ActionBar.LayoutParams
 import android.graphics.Typeface
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -38,9 +39,10 @@ class VideoAdapter: ListAdapter<AccountInfo, VideoAdapter.ViewHolder>(VideoDiffC
             val name = TextView(itemView.context)
             name.text = account.username
             name.setTextSize(20.0F)
+            name.setTextColor(itemViewBinding.root.resources.getColor(R.color.white))
             name.setTypeface(Typeface.DEFAULT_BOLD)
-            name.setBackgroundResource(R.color.white)
             name.layoutParams = ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+            name.gravity = Gravity.BOTTOM
             itemViewBinding.videoFrame.addView(name)
         }
 
