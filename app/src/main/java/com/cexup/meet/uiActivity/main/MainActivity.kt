@@ -627,8 +627,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun initSDK() {
         try {
-            SDKManager.initRtmSDK(baseContext, meetingDetails)
-            SDKManager.initRtcSDK(baseContext, mRtcEventHandler)
+            SDKManager.initRtmSDK(this@MainActivity, meetingDetails)
+            SDKManager.initRtcSDK(this@MainActivity, mRtcEventHandler)
             rtcEngine = SDKManager.rtcEngine
             rtmChannel = SDKManager.rtmChannel
             rtcEngine?.enableVideo()
