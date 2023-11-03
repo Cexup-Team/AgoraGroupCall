@@ -28,9 +28,6 @@
         android:theme="@style/Theme.AgoraTesting"
         tools:targetApi="31">
         <activity
-            android:name=".uiActivity.listmeeting.ListMeetingActivity"
-            android:exported="false" />
-        <activity
             android:name=".uiActivity.main.SettingActivity"
             android:exported="false" />
         <activity

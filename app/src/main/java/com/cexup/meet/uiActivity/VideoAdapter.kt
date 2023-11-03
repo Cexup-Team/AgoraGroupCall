@@ -38,11 +38,13 @@ class VideoAdapter: ListAdapter<AccountInfo, VideoAdapter.ViewHolder>(VideoDiffC
 
             val name = TextView(itemView.context)
             name.text = account.username
-            name.setTextSize(20.0F)
+            name.textSize = 20F
             name.setTextColor(itemViewBinding.root.resources.getColor(R.color.white))
-            name.setTypeface(Typeface.DEFAULT_BOLD)
-            name.layoutParams = ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
-            name.gravity = Gravity.BOTTOM
+            name.typeface = Typeface.DEFAULT_BOLD
+            name.layoutParams = ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+            name.setPadding(15,10, 15,10)
+            name.setShadowLayer(5f, -5f, 0f, R.color.black)
+            name.gravity = Gravity.BOTTOM or Gravity.START
             itemViewBinding.videoFrame.addView(name)
         }
 

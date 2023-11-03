@@ -8,14 +8,13 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cexup.meet.R
 import com.cexup.meet.data.ChatRTM
 import com.cexup.meet.data.MeetingInfo
 import com.cexup.meet.databinding.ActivityChatBinding
-import com.cexup.meet.utils.TempMeeting
 import com.cexup.meet.utils.SDKManager
+import com.cexup.meet.utils.TempMeeting
 import io.agora.rtm.ErrorInfo
 import io.agora.rtm.ResultCallback
 
@@ -23,7 +22,6 @@ class ChatActivity : AppCompatActivity(){
 
 
     private lateinit var binding: ActivityChatBinding
-    private lateinit var viewModel: ChatViewModel
     private lateinit var adapterChat : ChatLogAdapter
     private lateinit var meetingDetails : MeetingInfo
 
@@ -44,7 +42,6 @@ class ChatActivity : AppCompatActivity(){
 
         seticon()
 
-        viewModel = ViewModelProvider(this)[ChatViewModel::class.java]
 
         binding.rvChatlog.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 

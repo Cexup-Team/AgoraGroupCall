@@ -1,7 +1,8 @@
 package com.cexup.meet.utils
 
-import android.content.Context
+import android.app.Activity
 import android.util.Log
+import android.widget.Toast
 import com.cexup.meet.GlobalSettings
 import com.cexup.meet.data.AccountInfo
 import com.cexup.meet.data.ChatRTM
@@ -52,12 +53,10 @@ object SDKManager{
         })
     }
     fun initRtmSDK(
-        mContext : Context,
+        mActivity: Activity,
         meetingDetails : MeetingInfo) {
         try {
-            Log.w("Init RTMClient", "AppID : $APP_ID , Context : $mContext")
-            rtmClient = RtmClient.createInstance(mContext, APP_ID, getRtmClientListener(meetingDetails.channelName.toString()))
-            Log.w("Login RTM", "Username : ${meetingDetails.username} , Token : ${meetingDetails.rtmToken}")
+            rtmClient = RtmClient.createInstance(mActivity.baseContext, APP_ID, getRtmClientListener(meetingDetails.channelName.toString(), mActivity))
             rtmClient?.login(meetingDetails.rtmToken, meetingDetails.username, object : ResultCallback<Void> {
                 override fun onSuccess(p0: Void?) {
                     //VOID
@@ -74,12 +73,12 @@ object SDKManager{
         }
     }
 
-    private fun getRtmClientListener(channel: String): RtmClientListener {
+    private fun getRtmClientListener(channel: String, mActivity: Activity): RtmClientListener {
         val listener = object : RtmClientListener{
             override fun onConnectionStateChanged(p0: Int, p1: Int) {
                 if (p0 == 3 && p1 == 2){
                     Log.w("onConnectionStateChanged", "Connection State : $p0, Reason : $p1")
-                    joinChannel(channel)
+                    joinChannel(channel, mActivity)
                 } else if (p1 == 6){
                     rtmClient?.release()
                 }
@@ -117,9 +116,9 @@ object SDKManager{
         return listener
     }
 
-    private fun joinChannel(channel: String) {
+    private fun joinChannel(channel: String, mActivity: Activity) {
         Log.w("RtmChannel", "Join RtmChannel")
-        rtmChannel = rtmClient?.createChannel(channel, getRtmChannelListener())
+        rtmChannel = rtmClient?.createChannel(channel, getRtmChannelListener(mActivity))
         rtmChannel?.join(object : ResultCallback<Void> {
             override fun onSuccess(p0: Void?) {
                 Log.w("RtmChannel", "Join RtmChannel Success")
@@ -133,7 +132,7 @@ object SDKManager{
 
     }
 
-    private fun getRtmChannelListener(): RtmChannelListener {
+    private fun getRtmChannelListener(mActivity: Activity): RtmChannelListener {
         val listener = object :RtmChannelListener{
             override fun onMemberCountUpdated(p0: Int) {
                 //Something
@@ -147,6 +146,15 @@ object SDKManager{
                 if (p0 != null && p1 != null){
                     val message = ChatRTM(p1.userId, p1.channelId, p0)
                     TempMeeting.TempChatRoom.add(message)
+
+                    try {
+                        mActivity.runOnUiThread {
+                            Toast.makeText(mActivity.baseContext, "New Message From :  ${p1.userId}", Toast.LENGTH_SHORT).show()                        }
+                    } catch (e:Exception){
+                        Log.e("onMessageReceived : Toast", "Exception : $e")
+                    }
+
+
                 }
             }
 
@@ -171,12 +179,12 @@ object SDKManager{
         return listener
     }
 
-    fun initRtcSDK(mContext: Context, mRtcEventHandler : IRtcEngineEventHandler) {
+    fun initRtcSDK(mActivity: Activity, mRtcEventHandler : IRtcEngineEventHandler) {
         Log.w("RtcSDK", "Try Init SDK")
         val globalSettings = GlobalSettings()
         try {
             val config = RtcEngineConfig()
-            config.mContext = mContext
+            config.mContext = mActivity.baseContext
             config.mAppId = APP_ID
             config.mEventHandler = mRtcEventHandler
             config.mChannelProfile = Constants.CHANNEL_PROFILE_LIVE_BROADCASTING
@@ -197,7 +205,7 @@ object SDKManager{
             rtcEngine?.setLocalAccessPoint(globalSettings.getPrivateCloudConfig())
 
         } catch (e: Exception) {
-            Log.e("RtcSDK", "Exception : ${e.toString()}")
+            Log.e("RtcSDK", "Exception : $e")
         }
     }
 }
