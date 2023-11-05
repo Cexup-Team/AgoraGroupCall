@@ -48,7 +48,7 @@ object ClassUtils {
         val paths = getSourcePaths(context)
         val parserCtl = CountDownLatch(paths.size)
         for (path in paths) {
-            DefaultPoolExecutor.instance?.execute(Runnable {
+            DefaultPoolExecutor.instance?.execute({
                 var dexfile: DexFile? = null
                 try {
                     if (path.endsWith(EXTRACTED_SUFFIX)) {

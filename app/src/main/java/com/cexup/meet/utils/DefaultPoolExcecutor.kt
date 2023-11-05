@@ -68,7 +68,7 @@ class DefaultPoolExecutor private constructor(
                                 MAX_THREAD_COUNT,
                                 SURPLUS_THREAD_LIFE,
                                 TimeUnit.SECONDS,
-                                ArrayBlockingQueue<Runnable>(64),
+                                ArrayBlockingQueue(64),
                                 DefaultThreadFactory()
                             )
                         }
